@@ -1,0 +1,85 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.whl
+*.egg
+*.log
+
+# Django
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.coverage
+.coverage.*
+nosetests.xml
+coverage.xml
+*.cover
+*.hypothesis/
+*.pytest_cache/
+*.migrations/
+*.DS_Store
+
+# Виртуальные окружения
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+.Python
+
+# Файлы окружения
+.env
+*.local
+
+# Секретные ключи и сертификаты
+*.pem
+*.key
+*.crt
+*.csr
+
+# IDE и редакторы
+.vscode/
+.idea/
+*.iml
+
+# Логи
+*.log
+
+# Другие временные файлы
+*.tmp
+*.bak
+*.swp
+*.swo
+*.orig
+*.pid
+*.seed
+*.pid.lock
+
+# Документы
+*.pdf
+*.docx
+*.xlsx
+*.pptx
+*.ppt
+*.odt
+*.ods
+*.odp
+
+# Прочие
+*.tgz
+*.zip
+*.tar
+*.rar
+*.7z

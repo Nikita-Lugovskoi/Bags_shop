@@ -1,0 +1,276 @@
+{% extends 'bags/base.html' %}
+{% load static %}
+{% load humanize %}
+{% load bags_extras %}
+
+{% block title %}История заказов{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        margin-bottom: 2rem;
+    }
+    
+    .order-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .order-header {
+        background: linear-gradient(135deg, #6c5ce7, #a8a4e6);
+        color: white;
+        border-radius: 15px 15px 0 0;
+        padding: 1.5rem;
+    }
+    
+    .order-status {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+    
+    .status-new { background-color: #e3f2fd; color: #1976d2; }
+    .status-pending { background-color: #fff3e0; color: #f57c00; }
+    .status-paid { background-color: #e8f5e9; color: #388e3c; }
+    .status-shipped { background-color: #e3f2fd; color: #1976d2; }
+    .status-delivered { background-color: #e8f5e9; color: #388e3c; }
+    .status-cancelled { background-color: #ffebee; color: #d32f2f; }
+    
+    .order-info {
+        padding: 1.5rem;
+    }
+    
+    .order-info-item {
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .order-info-item i {
+        width: 25px;
+        color: #6c5ce7;
+        margin-right: 10px;
+    }
+    
+    .order-items {
+        background-color: #f8f9fa;
+        border-radius: 0 0 15px 15px;
+        padding: 1.5rem;
+    }
+    
+    .order-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background: white;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    .order-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .order-item-image {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-right: 1.5rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .order-item-image.no-image {
+        background-color: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #adb5bd;
+        font-size: 2rem;
+    }
+    
+    .order-item-details {
+        flex: 1;
+    }
+    
+    .order-item-name {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .order-item-price {
+        color: #6c5ce7;
+        font-weight: 500;
+    }
+    
+    .order-total {
+        background: white;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-top: 1rem;
+        text-align: right;
+        font-weight: 500;
+        font-size: 1.2rem;
+        color: #6c5ce7;
+    }
+    
+    .empty-orders {
+        text-align: center;
+        padding: 3rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .empty-orders i {
+        font-size: 4rem;
+        color: #6c5ce7;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-orders .btn i {
+        font-size: 1rem;
+        margin-right: 0.5rem;
+        margin-top: 1.3%;
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">История заказов</h1>
+    
+    {% if orders %}
+        {% for order in orders %}
+            <div class="order-card">
+                <div class="order-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">Заказ #{{ order.id }}</h5>
+                        <small>
+                            Создан: {{ order.created_at|date:"d.m.Y H:i" }}
+                            {% if order.updated_at != order.created_at %}
+                                <br><span class="text-muted">Обновлен: {{ order.updated_at|date:"d.m.Y H:i" }}</span>
+                            {% endif %}
+                        </small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="order-status status-{{ order.status }}">
+                            {{ order.get_status_display }}
+                        </span>
+                        {% if order.status in 'pending,paid' %}
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'bags:edit_order' order.id %}">
+                                        <i class="fas fa-edit me-2"></i>Редактировать
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="{% url 'bags:cancel_order' order.id %}">
+                                        <i class="fas fa-times me-2"></i>Отменить заказ
+                                    </a></li>
+                                </ul>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="order-info">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="order-info-item">
+                                <i class="fas fa-user"></i>
+                                <div>
+                                    <strong>Заказчик:</strong><br>
+                                    {{ order.first_name }} {{ order.last_name }}
+                                </div>
+                            </div>
+                            <div class="order-info-item">
+                                <i class="fas fa-envelope"></i>
+                                <div>
+                                    <strong>Email:</strong><br>
+                                    {{ order.email }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="order-info-item">
+                                <i class="fas fa-phone"></i>
+                                <div>
+                                    <strong>Телефон:</strong><br>
+                                    {{ order.phone }}
+                                </div>
+                            </div>
+                            <div class="order-info-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <div>
+                                    <strong>Адрес доставки:</strong><br>
+                                    {{ order.address }}, {{ order.city }}, {{ order.postal_code }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="order-items">
+                    <h6 class="mb-3">Товары в заказе:</h6>
+                    {% for item in order.orderitem_set.all %}
+                        <div class="order-item">
+                            {% if item.product.image %}
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="order-item-image">
+                            {% else %}
+                                <div class="order-item-image no-image">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            {% endif %}
+                            <div class="order-item-details">
+                                <div class="order-item-name">{{ item.product.name }}</div>
+                                <div class="order-item-category text-muted small mb-2">
+                                    <i class="fas fa-tag"></i> {{ item.product.category.name }}
+                                </div>
+                                <div class="order-item-description small text-muted mb-2">
+                                    {{ item.product.description|truncatechars:100 }}
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="order-item-price">
+                                        <div class="text-muted small">Цена</div>
+                                        {{ item.price|floatformat:0|intcomma }} ₽
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    
+                    <div class="order-total">
+                        Итого: {{ order.total_price|floatformat:0|intcomma }} ₽
+                    </div>
+                    
+                    {% if order.comment %}
+                        <div class="order-comment mt-3 p-3 bg-light rounded">
+                            <h6 class="mb-2"><i class="fas fa-comment me-2"></i>Комментарий к заказу:</h6>
+                            <p class="mb-0 text-muted">{{ order.comment }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-orders">
+            <i class="fas fa-shopping-bag"></i>
+            <h3>У вас пока нет заказов</h3>
+            <p class="text-muted">Перейдите в каталог, чтобы выбрать товары</p>
+            <a href="{% url 'bags:product_list' %}" class="btn btn-primary mt-3">
+                <i class="fas fa-shopping-cart"></i> Перейти к покупкам
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

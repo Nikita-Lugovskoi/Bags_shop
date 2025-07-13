@@ -1,0 +1,72 @@
+/* Анимации для карточек товаров */
+.card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card-img-top {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    width: 100%;
+    height: 300px; /* Фиксированная высота */
+    object-fit: cover; /* Сохраняет пропорции изображения */
+    object-position: center; /* Центрирует изображение */
+}
+
+.card-img-top:hover {
+    transform: translateY(-5px) scale(1.05);
+}
+
+.card:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+    transition: background-color 0.3s ease;
+}
+
+.card:hover .card-body {
+    background-color: #f8f9fa;
+}
+
+/* Стили для изображений в корзине */
+.cart-item-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 0.25rem;
+    transition: transform 0.3s ease;
+}
+
+.cart-item-image:hover {
+    transform: scale(1.05);
+}
+
+/* Анимация для кнопок */
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Анимация для цен */
+.card-text strong {
+    transition: color 0.3s ease;
+}
+
+.card:hover .card-text strong {
+    color: #0d6efd;
+}
+
+/* Анимация для заголовков */
+.card-title {
+    transition: color 0.3s ease;
+}
+
+.card:hover .card-title {
+    color: #0d6efd;
+} 

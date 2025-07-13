@@ -1,0 +1,305 @@
+{% extends 'bags/base.html' %}
+{% load static %}
+
+{% block title %}Редактирование профиля{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="profile-card">
+                <div class="profile-content">
+                    <h3 class="form-title">Редактирование профиля</h3>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group avatar-upload">
+                            <label for="{{ form.avatar.id_for_label }}">Аватар</label>
+                            <div class="avatar-upload-container">
+                                <div class="current-avatar">
+                                    {% if user.avatar %}
+                                        <img src="{{ user.avatar.url }}" alt="Текущий аватар" class="preview-image">
+                                    {% else %}
+                                        <div class="avatar-placeholder">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="upload-controls">
+                                    {{ form.avatar }}
+                                    <div class="upload-hint">Рекомендуемый размер: 200x200 пикселей</div>
+                                </div>
+                            </div>
+                            {% if form.avatar.errors %}
+                                <div class="error-message">{{ form.avatar.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.email.id_for_label }}">Email</label>
+                            {{ form.email }}
+                            {% if form.email.help_text %}
+                                <div class="help-text">{{ form.email.help_text }}</div>
+                            {% endif %}
+                            {% if email_pending %}
+                                <div class="email-pending-alert">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Ожидает подтверждения: <strong>{{ pending_email }}</strong></span>
+                                </div>
+                            {% else %}
+                                <div class="email-change-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Для смены email используйте <a href="{% url 'users:change_email' %}">специальную форму</a></span>
+                                </div>
+                            {% endif %}
+                            {% if form.email.errors %}
+                                <div class="error-message">{{ form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.first_name.id_for_label }}">Имя</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="error-message">{{ form.first_name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.last_name.id_for_label }}">Фамилия</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="error-message">{{ form.last_name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="action-buttons">
+                            <button type="submit" class="action-button primary">
+                                <i class="fas fa-save"></i>
+                                <span>Сохранить изменения</span>
+                            </button>
+                            <a href="{% url 'users:user_profile' %}" class="action-button secondary">
+                                <i class="fas fa-arrow-left"></i>
+                                <span>Вернуться в профиль</span>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-card {
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    .profile-content {
+        padding: 40px;
+        background: #ffffff;
+    }
+
+    .form-title {
+        color: #2c3e50;
+        margin-bottom: 30px;
+        font-weight: 600;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #2c3e50;
+        font-weight: 500;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 10px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus {
+        border-color: #2c3e50;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 5px;
+    }
+
+    .action-buttons {
+        display: grid;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .action-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .action-button i {
+        margin-right: 10px;
+    }
+
+    .action-button.primary {
+        background: #2c3e50;
+        color: #ffffff;
+    }
+
+    .action-button.secondary {
+        background: #f8f9fa;
+        color: #2c3e50;
+        border: 2px solid #2c3e50;
+    }
+
+    .action-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .avatar-upload {
+        margin-top: 30px;
+    }
+
+    .avatar-upload-container {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .current-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: #f8f9fa;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .preview-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .upload-controls {
+        flex: 1;
+    }
+
+    .upload-hint {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 8px;
+    }
+
+    .help-text {
+        font-size: 0.875rem;
+        color: #17a2b8;
+        margin-top: 5px;
+        font-style: italic;
+    }
+
+    .email-pending-alert {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 15px;
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        margin-top: 8px;
+        color: #856404;
+        font-size: 0.875rem;
+    }
+
+    .email-pending-alert i {
+        color: #f39c12;
+    }
+
+    .email-change-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 15px;
+        background: #e3f2fd;
+        border: 1px solid #bbdefb;
+        border-radius: 8px;
+        margin-top: 8px;
+        color: #1976d2;
+        font-size: 0.875rem;
+    }
+
+    .email-change-info i {
+        color: #2196f3;
+    }
+
+    .email-change-info a {
+        color: #1976d2;
+        text-decoration: underline;
+        font-weight: 500;
+    }
+
+    .email-change-info a:hover {
+        color: #0d47a1;
+    }
+
+    /* Стили для поля загрузки файла */
+    .form-group input[type="file"] {
+        padding: 8px;
+        border: 2px dashed #e9ecef;
+        border-radius: 8px;
+        background: #f8f9fa;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input[type="file"]:hover {
+        border-color: #2c3e50;
+        background: #ffffff;
+    }
+
+    .form-group input[type="file"]:focus {
+        outline: none;
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+    }
+
+    /* Стили для поля email */
+    .form-group input[type="email"] {
+        width: 100%;
+        padding: 10px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input[type="email"]:focus {
+        border-color: #2c3e50;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+    }
+</style>
+{% endblock %} 

@@ -1,0 +1,592 @@
+{% extends 'bags/base.html' %}
+{% load humanize %}
+
+{% block title %}Популярные товары - Магазин сумочек из бусин{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container mt-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'bags:home' %}">Главная</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Популярные товары</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        --warning-gradient: linear-gradient(135deg, #ff5858 0%, #f09819 100%);
+        --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --card-shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .popular-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 40px 0;
+        margin-top: -50px;
+        margin-bottom: 50px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .popular-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml;utf8,<svg width="100%25" height="100%25" xmlns="http://www.w3.org/2000/svg"><g fill="%23ffffff" fill-opacity="0.1"> <circle cx="40" cy="60" r="12"/><circle cx="120" cy="90" r="8"/><circle cx="200" cy="40" r="10"/><circle cx="300" cy="100" r="7"/><circle cx="400" cy="60" r="11"/><circle cx="600" cy="80" r="9"/><circle cx="700" cy="50" r="13"/></g></svg>') repeat;
+        background-size: auto 100%;
+        animation: float 20s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+
+    .popular-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .popular-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        position: relative;
+        z-index: 2;
+    }
+
+    .popular-stats {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin-top: 30px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .products-grid {
+        padding: 40px 0;
+    }
+
+    .product-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        border: none;
+        overflow: hidden;
+        position: relative;
+        height: 100%; /* Адаптивная высота */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .product-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .product-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .product-image {
+        height: 280px; /* Фиксированная высота изображения */
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .product-image img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        border-radius: 12px;
+        transition: var(--transition);
+    }
+
+    .product-card:hover .product-image img {
+        transform: scale(1.05);
+    }
+
+    .product-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: var(--success-gradient);
+        color: white;
+        padding: 6px 10px;
+        border-radius: 16px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(67, 233, 123, 0.3);
+    }
+
+    .product-badge.unavailable {
+        background: var(--warning-gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(255, 88, 88, 0.3);
+    }
+
+    .product-content {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        flex: 1; /* Занимает оставшееся пространство */
+    }
+
+    .product-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #2d3436;
+        margin-bottom: 8px;
+        line-height: 1.3;
+    }
+
+    .product-description {
+        color: #636e72;
+        font-size: 1rem;
+        line-height: 1.4;
+        margin-bottom: 12px;
+        flex: 1; /* Занимает доступное пространство */
+    }
+
+    .product-price {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #00b894;
+        margin-bottom: 15px;
+        text-shadow: 0 2px 8px rgba(0, 184, 148, 0.2);
+    }
+
+    .product-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: auto; /* Прижимаем кнопки к низу */
+    }
+
+    .btn-product {
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: var(--transition);
+        text-decoration: none;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        flex: 1;
+        min-height: 36px;
+    }
+
+    .btn-product-primary {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+    }
+
+    .btn-product-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    .btn-product-outline {
+        background: transparent;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .btn-product-outline:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-product-favorite {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        color: white;
+        border: none;
+    }
+
+    .btn-product-favorite:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(255, 107, 107, 0.3);
+        color: white;
+    }
+
+    .btn-product-favorite-outline {
+        background: transparent;
+        color: #ff6b6b;
+        border: 2px solid #ff6b6b;
+    }
+
+    .btn-product-favorite-outline:hover {
+        background: #ff6b6b;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #636e72;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        color: #2d3436;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .empty-state p {
+        color: #636e72;
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+    }
+
+    .empty-state .btn i {
+        padding-top: 20px;
+        padding-right: 15px;
+        font-size: 1.8rem;
+    }
+
+    .pagination {
+        margin-top: 50px;
+    }
+
+    .pagination .page-link {
+        border-radius: 12px;
+        margin: 0 3px;
+        border: 2px solid #e9ecef;
+        color: #636e72;
+        transition: var(--transition);
+        padding: 12px 16px;
+        font-weight: 600;
+    }
+
+    .pagination .page-link:hover {
+        background: var(--primary-gradient);
+        border-color: #667eea;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .pagination .page-item.active .page-link {
+        background: var(--primary-gradient);
+        border-color: #667eea;
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .popular-title {
+            font-size: 2.5rem;
+        }
+        
+        .popular-stats {
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .product-actions {
+            flex-direction: column;
+        }
+        
+        .btn-product {
+            width: 100%;
+            min-height: 44px;
+            font-size: 16px;
+            padding: 12px 16px;
+        }
+        
+        .product-card {
+            margin-bottom: 20px;
+        }
+        
+        .product-image {
+            height: 200px; /* Меньшая высота изображения */
+        }
+        
+        .product-title {
+            font-size: 1rem;
+        }
+        
+        .product-description {
+            font-size: 0.85rem;
+        }
+        
+        .product-price {
+            font-size: 1.1rem;
+        }
+        
+        .pagination .page-link {
+            min-height: 44px;
+            font-size: 16px;
+            padding: 12px 16px;
+        }
+        
+        .empty-state .btn {
+            min-height: 44px;
+            font-size: 16px;
+            padding: 12px 20px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .popular-title {
+            font-size: 2rem;
+        }
+        
+        .popular-subtitle {
+            font-size: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+        }
+        
+        .product-image {
+            height: 180px; /* Меньшая высота изображения */
+        }
+        
+        .product-title {
+            font-size: 0.95rem;
+        }
+        
+        .product-description {
+            font-size: 0.8rem;
+        }
+        
+        .product-price {
+            font-size: 1rem;
+        }
+        
+        .popular-header {
+            padding: 30px 0;
+        }
+        
+        .products-grid {
+            padding: 20px 0;
+        }
+        
+        .btn {
+            margin: 5px 0;
+        }
+    }
+
+    /* Анимации появления */
+    .fade-in {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.6s ease;
+    }
+
+    .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+</style>
+
+<!-- заголовок популярных -->
+<section class="popular-header">
+    <div class="container">
+        <h1 class="popular-title">Популярные товары</h1>
+        <p class="popular-subtitle">Самые популярные сумочки из бусин ручной работы</p>
+        
+        <div class="popular-stats">
+            <div class="stat-item">
+                <span class="stat-label"><b>Товаров: </b></span>
+                <span class="stat-number">{{ products.paginator.count|default:0 }}</span>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Популярные -->
+<section class="products-grid">
+    <div class="container">
+        {% if products %}
+            <div class="row g-4">
+                {% for product in products %}
+                    <div class="col-lg-3 col-md-4 col-sm-6 fade-in">
+                        <div class="product-card">
+                            <div class="product-image">
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                                {% else %}
+                                    <img src="https://via.placeholder.com/300x300" alt="Нет изображения">
+                                {% endif %}
+                                {% if product.in_stock %}
+                                    <div class="product-badge">
+                                        <i class="fas fa-star"></i> Популярный
+                                    </div>
+                                {% else %}
+                                    <div class="product-badge unavailable">
+                                        <i class="fas fa-clock"></i> На заказ
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="product-content">
+                                <h5 class="product-title">{{ product.name }}</h5>
+                                <p class="product-description">{{ product.description|truncatewords:15 }}</p>
+                                <p class="product-price">{{ product.price|floatformat:0|intcomma }} ₽</p>
+                                <div class="product-actions">
+                                    <a href="{% url 'bags:product_detail' product.slug %}" class="btn-product btn-product-outline">
+                                        <i class="fas fa-eye"></i> Подробнее
+                                    </a>
+                                    {% if user.is_authenticated %}
+                                        {% if product.in_stock %}
+                                            <a href="{% url 'bags:add_to_cart' product.id %}" class="btn-product btn-product-primary">
+                                                <i class="fas fa-shopping-cart"></i> В корзину
+                                            </a>
+                                        {% else %}
+                                            {% if product in user.favorite_set.all %}
+                                                <a href="{% url 'bags:remove_from_favorites' product.id %}" class="btn-product btn-product-favorite-outline">
+                                                    <i class="fas fa-heart"></i> В избранном
+                                                </a>
+                                            {% else %}
+                                                <a href="{% url 'bags:add_to_favorites' product.id %}" class="btn-product btn-product-favorite">
+                                                    <i class="far fa-heart"></i> В избранное
+                                                </a>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state fade-in">
+                <i class="fas fa-star"></i>
+                <h3>Пока нет популярных товаров</h3>
+                <p>Наши популярные товары появятся здесь, когда покупатели начнут их активно просматривать</p>
+                <a href="{% url 'bags:product_list' %}" class="btn btn-primary" style="background: var(--primary-gradient); border: none; padding: 12px 30px; border-radius: 12px;">
+                    <i class="fas fa-th-large me-1"></i>Перейти в каталог
+                </a>
+            </div>
+        {% endif %}
+
+        <!-- навигация -->
+        {% if products.has_other_pages %}
+            <nav aria-label="Навигация по страницам" class="pagination">
+                <ul class="pagination justify-content-center">
+                    {% if products.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.previous_page_number }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in products.paginator.page_range %}
+                        {% if products.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if products.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.next_page_number }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+// Анимации появления при скролле
+document.addEventListener('DOMContentLoaded', function() {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.fade-in').forEach(el => {
+        observer.observe(el);
+    });
+});
+</script>
+{% endblock %} 

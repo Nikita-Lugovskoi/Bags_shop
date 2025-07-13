@@ -1,0 +1,222 @@
+{% extends 'users/base.html' %}
+
+{% block user_title %}Подтверждение Email{% endblock %}
+
+{% block user_header %}Подтверждение Email{% endblock %}
+
+{% block user_content %}
+<style>
+    .verification-status {
+        text-align: center;
+        padding: 40px 20px;
+    }
+    
+    .verification-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+    }
+    
+    .verification-icon.success {
+        color: #28a745;
+    }
+    
+    .verification-icon.error {
+        color: #dc3545;
+    }
+    
+    .verification-icon.info {
+        color: #17a2b8;
+    }
+    
+    .verification-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+    
+    .verification-message {
+        font-size: 1.1rem;
+        color: #6c757d;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+    
+    .email-change-info {
+        background: #e3f2fd;
+        border: 1px solid #bbdefb;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+        text-align: left;
+    }
+    
+    .email-change-info h4 {
+        color: #1976d2;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+    
+    .email-change-info .email-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #e3f2fd;
+    }
+    
+    .email-change-info .email-item:last-child {
+        border-bottom: none;
+    }
+    
+    .email-change-info .email-label {
+        font-weight: 500;
+        color: #424242;
+    }
+    
+    .email-change-info .email-value {
+        color: #1976d2;
+        font-weight: 600;
+    }
+    
+    .verification-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn-verification {
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-verification:hover {
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+</style>
+
+<div class="verification-status">
+    {% if email_change_pending %}
+        <div class="verification-icon info">
+            <i class="fas fa-clock"></i>
+        </div>
+        <h2 class="verification-title">Ожидание подтверждения смены email</h2>
+        <p class="verification-message">
+            Вы запросили смену email адреса. Для завершения процесса перейдите по ссылке, отправленной на новый email.
+        </p>
+        
+        <div class="email-change-info">
+            <h4><i class="fas fa-info-circle"></i> Информация о смене email</h4>
+            <div class="email-item">
+                <span class="email-label">Текущий email:</span>
+                <span class="email-value">{{ current_email }}</span>
+            </div>
+            <div class="email-item">
+                <span class="email-label">Новый email:</span>
+                <span class="email-value">{{ pending_email }}</span>
+            </div>
+        </div>
+        
+        <div class="verification-actions">
+            <a href="{% url 'users:user_profile' %}" class="btn btn-primary btn-verification">
+                <i class="fas fa-user me-2"></i>Вернуться в профиль
+            </a>
+            <a href="{% url 'users:cancel_email_change' %}" class="btn btn-warning btn-verification" 
+               onclick="return confirm('Вы уверены, что хотите отменить смену email?')">
+                <i class="fas fa-times me-2"></i>Отменить смену
+            </a>
+            <a href="{% url 'bags:home' %}" class="btn btn-outline-primary btn-verification">
+                <i class="fas fa-home me-2"></i>На главную
+            </a>
+        </div>
+    {% elif messages %}
+        {% for message in messages %}
+            {% if message.tags == 'success' %}
+                <div class="verification-icon success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2 class="verification-title">Email подтвержден!</h2>
+                <p class="verification-message">
+                    {{ message }}
+                </p>
+                <div class="verification-actions">
+                    <a href="{% url 'users:user_login' %}" class="btn btn-primary btn-verification">
+                        <i class="fas fa-sign-in-alt me-2"></i>Войти в систему
+                    </a>
+                    <a href="{% url 'bags:home' %}" class="btn btn-outline-primary btn-verification">
+                        <i class="fas fa-home me-2"></i>На главную
+                    </a>
+                </div>
+            {% elif message.tags == 'error' %}
+                <div class="verification-icon error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h2 class="verification-title">Ошибка подтверждения</h2>
+                <p class="verification-message">
+                    {{ message }}
+                </p>
+                <div class="verification-actions">
+                    <a href="{% url 'users:user_register' %}" class="btn btn-primary btn-verification">
+                        <i class="fas fa-user-plus me-2"></i>Зарегистрироваться заново
+                    </a>
+                    <a href="{% url 'users:user_login' %}" class="btn btn-outline-primary btn-verification">
+                        <i class="fas fa-sign-in-alt me-2"></i>Войти в систему
+                    </a>
+                </div>
+            {% elif message.tags == 'info' %}
+                <div class="verification-icon info">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h2 class="verification-title">Проверьте вашу почту</h2>
+                <p class="verification-message">
+                    {{ message }}
+                </p>
+                <div class="verification-actions">
+                    <a href="{% url 'users:user_login' %}" class="btn btn-primary btn-verification">
+                        <i class="fas fa-sign-in-alt me-2"></i>Войти в систему
+                    </a>
+                    <a href="{% url 'bags:home' %}" class="btn btn-outline-primary btn-verification">
+                        <i class="fas fa-home me-2"></i>На главную
+                    </a>
+                </div>
+            {% else %}
+                <div class="verification-icon info">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <h2 class="verification-title">Информация</h2>
+                <p class="verification-message">
+                    {{ message }}
+                </p>
+                <div class="verification-actions">
+                    <a href="{% url 'users:user_login' %}" class="btn btn-primary btn-verification">
+                        <i class="fas fa-sign-in-alt me-2"></i>Войти в систему
+                    </a>
+                    <a href="{% url 'bags:home' %}" class="btn btn-outline-primary btn-verification">
+                        <i class="fas fa-home me-2"></i>На главную
+                    </a>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <div class="verification-icon info">
+            <i class="fas fa-envelope"></i>
+        </div>
+        <h2 class="verification-title">Подтверждение Email</h2>
+        <p class="verification-message">
+            Для подтверждения вашего email перейдите по ссылке, отправленной на вашу почту.
+        </p>
+        <div class="verification-actions">
+            <a href="{% url 'users:user_login' %}" class="btn btn-primary btn-verification">
+                <i class="fas fa-sign-in-alt me-2"></i>Войти в систему
+            </a>
+            <a href="{% url 'bags:home' %}" class="btn btn-outline-primary btn-verification">
+                <i class="fas fa-home me-2"></i>На главную
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

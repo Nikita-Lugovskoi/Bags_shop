@@ -1,0 +1,291 @@
+{% extends 'bags/base.html' %}
+{% load bags_extras %}
+{% load humanize %}
+
+{% block title %}Оформление заказа - Магазин сумочек из бусин{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Стили для поля телефона */
+    input[name="phone"] {
+        font-family: 'Courier New', monospace;
+        letter-spacing: 1px;
+        font-size: 16px;
+    }
+    
+    input[name="phone"]::placeholder {
+        color: #adb5bd;
+        font-family: 'Courier New', monospace;
+        letter-spacing: 1px;
+    }
+    
+    /* Подсветка при фокусе */
+    input[name="phone"]:focus {
+        border-color: #6c5ce7;
+        box-shadow: 0 0 0 0.2rem rgba(108, 92, 231, 0.25);
+    }
+    
+    /* Стили для поля согласия на обработку персональных данных */
+    .privacy-agreement-section .card {
+        border: 2px solid #e3f2fd;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
+    }
+    
+    .privacy-agreement-section .card-body {
+        padding: 20px;
+    }
+    
+    .form-check-input:checked {
+        background-color: #2196f3;
+        border-color: #2196f3;
+    }
+    
+    .form-text a {
+        color: #2196f3;
+        text-decoration: none;
+    }
+    
+    .form-text a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Оформление заказа</h1>
+
+    <div class="row">
+        <!-- Форма оформления заказа -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="post" action="{% url 'bags:checkout' %}">
+                        {% csrf_token %}
+                        
+                        <h5 class="mb-3">Контактная информация</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">Имя</label>
+                                {{ form.first_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">Фамилия</label>
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                            {{ form.email }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label">Телефон</label>
+                            {{ form.phone }}
+                        </div>
+
+                        <h5 class="mb-3">Адрес доставки</h5>
+                        <div class="mb-3">
+                            <label for="{{ form.address.id_for_label }}" class="form-label">Адрес</label>
+                            {{ form.address }}
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.city.id_for_label }}" class="form-label">Город</label>
+                                {{ form.city }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.postal_code.id_for_label }}" class="form-label">Почтовый индекс</label>
+                                {{ form.postal_code }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.comment.id_for_label }}" class="form-label">Комментарий к заказу</label>
+                            {{ form.comment }}
+                        </div>
+
+                        <!-- Поле согласия на обработку персональных данных -->
+                        <div class="privacy-agreement-section mt-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="form-check">
+                                        {{ form.privacy_agreement }}
+                                        <label class="form-check-label" for="{{ form.privacy_agreement.id_for_label }}">
+                                            {{ form.privacy_agreement.label }}
+                                        </label>
+                                        {% if form.privacy_agreement.help_text %}
+                                            <div class="form-text mt-2">
+                                                {{ form.privacy_agreement.help_text|safe }}
+                                            </div>
+                                        {% endif %}
+                                        {% if form.privacy_agreement.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.privacy_agreement.errors }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Оформить заказ</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Информация о заказе -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Ваш заказ</h5>
+                </div>
+                <div class="card-body">
+                    {% for item in order.orderitem_set.all %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{{ item.product.name }}</span>
+                            <span>{{ item.price|floatformat:0|intcomma }} ₽</span>
+                        </div>
+                    {% endfor %}
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Итого (без учета доставки):</strong>
+                        <strong>{{ order.total_price|floatformat:0|intcomma }} ₽</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Маска для ввода телефона
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneInput = document.querySelector('input[name="phone"]');
+
+    if (phoneInput) {
+        // Функция для применения маски
+        function applyPhoneMask(input) {
+            let value = input.value.replace(/\D/g, ''); // Убираем все нецифровые символы
+
+            // Если номер начинается с 8, заменяем на 7
+            if (value.startsWith('8')) {
+                value = '7' + value.substring(1);
+            }
+
+            // Если номер не начинается с 7, добавляем 7
+            if (!value.startsWith('7')) {
+                value = '7' + value;
+            }
+
+            // Ограничиваем длину до 11 цифр (7 + 10 цифр номера)
+            value = value.substring(0, 11);
+
+            // Применяем маску
+            let maskedValue = '';
+            if (value.length > 0) {
+                maskedValue = '+7';
+                if (value.length > 1) {
+                    maskedValue += ' (' + value.substring(1, 4);
+                    if (value.length > 4) {
+                        maskedValue += ') ' + value.substring(4, 7);
+                        if (value.length > 7) {
+                            maskedValue += '-' + value.substring(7, 9);
+                            if (value.length > 9) {
+                                maskedValue += '-' + value.substring(9, 11);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Сохраняем позицию курсора
+            const cursorPos = input.selectionStart;
+            input.value = maskedValue;
+
+            // Восстанавливаем позицию курсора с учетом маски
+            if (cursorPos <= 4) {
+                input.setSelectionRange(4, 4);
+            } else if (cursorPos <= 7) {
+                input.setSelectionRange(cursorPos + 2, cursorPos + 2);
+            } else if (cursorPos <= 10) {
+                input.setSelectionRange(cursorPos + 3, cursorPos + 3);
+            } else if (cursorPos <= 12) {
+                input.setSelectionRange(cursorPos + 4, cursorPos + 4);
+            } else {
+                input.setSelectionRange(cursorPos + 5, cursorPos + 5);
+            }
+        }
+
+        // Применяем маску при вводе
+        phoneInput.addEventListener('input', function(e) {
+            applyPhoneMask(this);
+        });
+
+        // Применяем маску при фокусе
+        phoneInput.addEventListener('focus', function(e) {
+            if (!this.value) {
+                this.value = '+7 (';
+                this.setSelectionRange(4, 4);
+            }
+        });
+
+        // Применяем маску при потере фокуса
+        phoneInput.addEventListener('blur', function(e) {
+            const value = this.value.replace(/\D/g, '');
+            if (value.length < 11) {
+                this.value = '';
+            }
+        });
+
+        // Обработка клавиш Backspace и Delete
+        phoneInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace') {
+                const cursorPos = this.selectionStart;
+                if (cursorPos <= 4) {
+                    e.preventDefault();
+                }
+            }
+        });
+
+        // Обработка вставки
+        phoneInput.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            const digitsOnly = pastedText.replace(/\D/g, '');
+            
+            if (digitsOnly.length >= 10) {
+                let value = digitsOnly;
+                if (value.startsWith('8')) {
+                    value = '7' + value.substring(1);
+                }
+                if (!value.startsWith('7')) {
+                    value = '7' + value;
+                }
+                value = value.substring(0, 11);
+                
+                let maskedValue = '+7';
+                if (value.length > 1) {
+                    maskedValue += ' (' + value.substring(1, 4);
+                    if (value.length > 4) {
+                        maskedValue += ') ' + value.substring(4, 7);
+                        if (value.length > 7) {
+                            maskedValue += '-' + value.substring(7, 9);
+                            if (value.length > 9) {
+                                maskedValue += '-' + value.substring(9, 11);
+                            }
+                        }
+                    }
+                }
+                this.value = maskedValue;
+            }
+        });
+    }
+});
+</script>
+{% endblock %} 

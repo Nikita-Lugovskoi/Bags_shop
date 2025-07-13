@@ -1,0 +1,12 @@
+{% extends 'users/base.html' %}
+
+{% block user_title %}Выход{% endblock %}
+
+{% block user_header %}Выход из системы{% endblock %}
+
+{% block user_content %}
+<div class="text-center">
+    <p class="mb-4">Вы успешно вышли из системы.</p>
+    <a href="{% url 'users:user_login' %}" class="btn btn-primary">Войти снова</a>
+</div>
+{% endblock %} 

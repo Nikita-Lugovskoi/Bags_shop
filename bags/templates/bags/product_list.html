@@ -1,0 +1,699 @@
+{% extends 'bags/base.html' %}
+{% load humanize %}
+
+{% block title %}Каталог товаров - Магазин сумочек из бусин{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        --warning-gradient: linear-gradient(135deg, #ff5858 0%, #f09819 100%);
+        --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --card-shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .catalog-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 60px 0;
+        margin-bottom: 50px;
+        text-align: center;
+    }
+
+    .catalog-title {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+    }
+
+    .catalog-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    .filters-section {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        padding: 18px 16px 16px 16px;
+        margin-bottom: 20px;
+    }
+
+    .filters-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .filters-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2d3436;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-group {
+        margin-bottom: 12px;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: #2d3436;
+        margin-bottom: 4px;
+        font-size: 0.98rem;
+        display: block;
+    }
+
+    .filter-input, .filter-select {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 7px 10px;
+        font-size: 0.97rem;
+        transition: var(--transition);
+        background: #f8f9fa;
+        width: 100%;
+    }
+
+    .filter-input:focus, .filter-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        background: white;
+        outline: none;
+    }
+
+    .price-range {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .price-separator {
+        color: #636e72;
+        font-weight: 600;
+    }
+
+    .checkbox-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 10px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        transition: var(--transition);
+        cursor: pointer;
+        font-size: 0.97rem;
+    }
+
+    .checkbox-wrapper:hover {
+        background: #e9ecef;
+    }
+
+    .checkbox-wrapper input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #667eea;
+    }
+
+    .filters-actions {
+        display: flex;
+        gap: 10px;
+    }
+    .apply-filters, .clear-filters {
+        border-radius: 10px;
+        font-size: 1rem;
+        padding: 10px 0;
+        font-weight: 600;
+        margin: 0;
+        width: 50%;
+        min-width: 120px;
+        height: 44px;
+        justify-content: center;
+    }
+    .apply-filters {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        margin-right: 0;
+    }
+    .clear-filters {
+        background: #f6f7fb;
+        border: 2px solid #667eea;
+        color: #667eea;
+        box-shadow: 0 2px 8px rgba(102,126,234,0.04);
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-weight: 600;
+        position: relative;
+        overflow: hidden;
+        margin-left: 0;
+    }
+    .clear-filters i {
+        font-size: 1.1em;
+    }
+    .clear-filters:hover {
+        background: linear-gradient(90deg, #e0e7ff 0%, #f6f7fb 100%);
+        color: #4f3cc9;
+        border-color: #4f3cc9;
+        box-shadow: 0 4px 16px rgba(102,126,234,0.10);
+        text-decoration: none;
+        transform: translateY(-1px) scale(1.03);
+    }
+
+    .results-info {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 20px 30px;
+        margin-bottom: 30px;
+        box-shadow: var(--card-shadow);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .results-count {
+        font-weight: 600;
+        color: #2d3436;
+        font-size: 1.1rem;
+    }
+
+    .product-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        border: none;
+        overflow: hidden;
+        position: relative;
+        height: 100%; /* Адаптивная высота */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .product-image-container {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 20px;
+        height: 280px; /* Фиксированная высота изображения */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .product-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        transition: var(--transition);
+    }
+
+    .product-card:hover .product-image {
+        transform: scale(1.1);
+    }
+
+    .product-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: white;
+        z-index: 2;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .product-badge.available {
+        background: var(--success-gradient);
+    }
+
+    .product-badge.unavailable {
+        background: var(--warning-gradient);
+    }
+
+    .product-content {
+        padding: 25px;
+        flex: 1; /* Занимает оставшееся пространство */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #2d3436;
+        line-height: 1.3;
+    }
+
+    .product-description {
+        color: #636e72;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 15px;
+        flex: 1; /* Занимает доступное пространство */
+    }
+
+    .product-price {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #00b894;
+        margin-bottom: 20px;
+    }
+
+    .product-actions {
+        display: flex;
+        gap: 10px;
+        flex-direction: column;
+        margin-top: auto; /* Прижимаем кнопки к низу */
+    }
+
+    .btn-product {
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: var(--transition);
+        text-decoration: none;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-product-primary {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+    }
+
+    .btn-product-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    .btn-product-outline {
+        background: transparent;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .btn-product-outline:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-product-favorite {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        color: white;
+        border: none;
+    }
+
+    .btn-product-favorite:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+        color: white;
+    }
+
+    .btn-product-favorite-outline {
+        background: transparent;
+        color: #ff6b6b;
+        border: 2px solid #ff6b6b;
+    }
+
+    .btn-product-favorite-outline:hover {
+        background: #ff6b6b;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+    }
+
+    .empty-state i {
+        font-size: 2rem;
+        color: #636e72;
+        margin-right: 15px;
+        margin-bottom: 2px;
+    }
+
+    @media (max-width: 768px) {
+        .catalog-title {
+            font-size: 2.5rem;
+        }
+        
+        .filters-section {
+            padding: 10px 5px 10px 5px;
+        }
+        
+        .filter-label {
+            font-size: 0.95rem;
+        }
+        .filters-actions {
+            flex-direction: column;
+            gap: 7px;
+        }
+        .apply-filters, .clear-filters {
+            width: 100%;
+            margin-bottom: 7px;
+            min-width: 0;
+            min-height: 44px;
+            font-size: 16px;
+        }
+        .results-info {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .product-card {
+            margin-bottom: 20px;
+        }
+        
+        .product-image-container {
+            height: 200px; /* Меньшая высота изображения */
+        }
+        
+        .btn-product {
+            min-height: 44px;
+            font-size: 16px;
+            padding: 12px 16px;
+        }
+        
+        .filter-input, .filter-select {
+            font-size: 16px;
+            min-height: 44px;
+            padding: 12px 16px;
+        }
+        
+        .price-range input {
+            font-size: 16px;
+            min-height: 44px;
+            padding: 12px 16px;
+        }
+        
+        .filter-group {
+            margin-bottom: 20px;
+        }
+        
+        .checkbox-wrapper {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-check-input {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .catalog-title {
+            font-size: 2rem;
+        }
+        
+        .product-title {
+            font-size: 1rem;
+        }
+        
+        .product-description {
+            font-size: 0.85rem;
+        }
+        
+        .product-price {
+            font-size: 1.1rem;
+        }
+        
+        .filters-section {
+            margin-bottom: 20px;
+        }
+        
+        .product-image-container {
+            height: 180px; /* Меньшая высота изображения */
+        }
+        
+        .btn {
+            margin: 5px 0;
+        }
+    }
+</style>
+
+<!-- Page Header -->
+<section class="catalog-header">
+    <div class="container">
+        <h1 class="catalog-title">Каталог товаров</h1>
+        <p class="catalog-subtitle">Найдите свою идеальную сумочку из бусин</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="row">
+        <!-- Фильтры -->
+        <div class="col-lg-3 col-md-4">
+            <div class="filters-section">
+                <div class="filters-header">
+                    <h3 class="filters-title">
+                        <i class="fas fa-filter"></i>
+                        Фильтры
+                    </h3>
+                </div>
+                
+                <form method="get" action="{% url 'bags:product_list' %}">
+                    <div class="filter-group">
+                        <label class="filter-label" for="search">
+                            <i class="fas fa-search"></i> Поиск
+                        </label>
+                        <input type="text" class="form-control filter-input" id="search" name="search" 
+                               value="{{ request.GET.search|default:'' }}" placeholder="Название товара...">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label" for="category">
+                            <i class="fas fa-tags"></i> Категория
+                        </label>
+                        <select class="form-select filter-select" id="category" name="category">
+                            <option value="">Все категории</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"i" %}selected{% endif %}>{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" class="form-check-input" id="in_stock" name="in_stock" {% if request.GET.in_stock %}checked{% endif %}>
+                            <label class="form-check-label" for="in_stock">Только в наличии</label>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-ruble-sign"></i> Цена (₽)
+                        </label>
+                        <div class="price-range">
+                            <input type="number" class="form-control filter-input" name="price_min" placeholder="от" min="0" value="{{ request.GET.price_min|default:'' }}">
+                            <span class="price-separator">—</span>
+                            <input type="number" class="form-control filter-input" name="price_max" placeholder="до" min="0" value="{{ request.GET.price_max|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label" for="material">
+                            <i class="fas fa-gem"></i> Материал
+                        </label>
+                        <select class="form-select filter-select" id="material" name="material">
+                            <option value="">Любой</option>
+                            {% for mat in all_materials %}
+                                <option value="{{ mat }}" {% if request.GET.material == mat %}selected{% endif %}>{{ mat }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-ruler-vertical"></i> Высота (см)
+                        </label>
+                        <div class="price-range">
+                            <input type="number" class="form-control filter-input" name="height_min" placeholder="от" min="0" value="{{ request.GET.height_min|default:'' }}">
+                            <span class="price-separator">—</span>
+                            <input type="number" class="form-control filter-input" name="height_max" placeholder="до" min="0" value="{{ request.GET.height_max|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-ruler-horizontal"></i> Длина (см)
+                        </label>
+                        <div class="price-range">
+                            <input type="number" class="form-control filter-input" name="length_min" placeholder="от" min="0" value="{{ request.GET.length_min|default:'' }}">
+                            <span class="price-separator">—</span>
+                            <input type="number" class="form-control filter-input" name="length_max" placeholder="до" min="0" value="{{ request.GET.length_max|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-arrows-alt-h"></i> Глубина (см)
+                        </label>
+                        <div class="price-range">
+                            <input type="number" class="form-control filter-input" name="depth_min" placeholder="от" min="0" value="{{ request.GET.depth_min|default:'' }}">
+                            <span class="price-separator">—</span>
+                            <input type="number" class="form-control filter-input" name="depth_max" placeholder="до" min="0" value="{{ request.GET.depth_max|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label" for="bead_color">
+                            <i class="fas fa-palette"></i> Цвет бусин
+                        </label>
+                        <select class="form-select filter-select" id="bead_color" name="bead_color">
+                            <option value="">Любой</option>
+                            {% for color in all_colors %}
+                                <option value="{{ color }}" {% if request.GET.bead_color == color %}selected{% endif %}>{{ color }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label" for="hardware_color">
+                            <i class="fas fa-link"></i> Цвет фурнитуры
+                        </label>
+                        <select class="form-select filter-select" id="hardware_color" name="hardware_color">
+                            <option value="">Любой</option>
+                            {% for color in all_hardware_colors %}
+                                <option value="{{ color }}" {% if request.GET.hardware_color == color %}selected{% endif %}>{{ color }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="d-flex filters-actions justify-content-between align-items-center mt-3">
+                        <button type="submit" class="apply-filters">
+                            <i class="fas fa-search"></i> Применить фильтры
+                        </button>
+                        <a href="{% url 'bags:product_list' %}" class="clear-filters">
+                            <i class="fas fa-times"></i> Сбросить
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Список товаров -->
+        <div class="col-lg-9 col-md-8">
+            <!-- Результат -->
+            <div class="results-info">
+                <div class="results-count">
+                    <i class="fas fa-box"></i>
+                    Найдено товаров: {{ products|length }}
+                </div>
+            </div>
+
+            <!-- Товары -->
+            {% if products %}
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    {% for product in products %}
+                    <div class="col d-flex align-items-stretch">
+                        <div class="product-card">
+                            <div class="product-image-container">
+                                {% if product.in_stock %}
+                                    <div class="product-badge available">В наличии</div>
+                                {% else %}
+                                    <div class="product-badge unavailable">На заказ</div>
+                                {% endif %}
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" class="product-image" alt="{{ product.name }}">
+                                {% else %}
+                                    <img src="https://via.placeholder.com/300x300" class="product-image" alt="Нет изображения">
+                                {% endif %}
+                            </div>
+                            <div class="product-content">
+                                <h5 class="product-title">{{ product.name }}</h5>
+                                <p class="product-description">{{ product.description|truncatewords:12 }}</p>
+                                <p class="product-price">{{ product.price|floatformat:0|intcomma }} ₽</p>
+                                <div class="product-actions">
+                                    <a href="{% url 'bags:product_detail' product.slug %}" class="btn-product btn-product-outline">
+                                        <i class="fas fa-eye"></i>Подробнее
+                                    </a>
+                                    {% if user.is_authenticated %}
+                                        {% if product.in_stock %}
+                                            <a href="{% url 'bags:add_to_cart' product.id %}" class="btn-product btn-product-primary">
+                                                <i class="fas fa-shopping-cart"></i>В корзину
+                                            </a>
+                                        {% else %}
+                                            {% if product in user.favorite_set.all %}
+                                                <a href="{% url 'bags:remove_from_favorites' product.id %}" class="btn-product btn-product-favorite-outline">
+                                                    <i class="fas fa-heart"></i>В избранном
+                                                </a>
+                                            {% else %}
+                                                <a href="{% url 'bags:add_to_favorites' product.id %}" class="btn-product btn-product-favorite">
+                                                    <i class="far fa-heart"></i>В избранное
+                                                </a>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-search"></i>
+                    <h3>Товары не найдены</h3>
+                    <p>Попробуйте изменить параметры поиска или фильтры</p>
+                    <a href="{% url 'bags:product_list' %}" class="btn btn-primary">
+                        <i class="fas fa-refresh"></i> Сбросить фильтры
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit form on filter changes
+    const filterInputs = document.querySelectorAll('.filter-input, .filter-select');
+    filterInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            this.closest('form').submit();
+        });
+    });
+
+    // Checkbox auto-submit
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            this.closest('form').submit();
+        });
+    });
+});
+</script>
+{% endblock %} 

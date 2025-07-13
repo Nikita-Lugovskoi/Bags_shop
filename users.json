@@ -1,0 +1,80 @@
+[
+    {
+        "model": "users.user",
+        "pk": 1,
+        "fields": {
+            "password": "pbkdf2_sha256$720000$K2LkXCPE2MY764kiMbGdhi$A6ZokigmjhlbfM4qSCDhqJBNxXA7n9gq33+wX9cNf/Q=",
+            "last_login": "2025-07-13T03:52:14.571Z",
+            "is_superuser": true,
+            "is_staff": true,
+            "is_active": true,
+            "date_joined": "2025-05-24T07:49:19.033Z",
+            "email": "admin@bags.ru",
+            "first_name": "Admin",
+            "last_name": "Adminov",
+            "role": "admin",
+            "is_verified": false,
+            "verification_code": null,
+            "verification_code_created_at": null,
+            "new_email": null,
+            "email_verification_token": null,
+            "new_password": null,
+            "password_verification_token": null,
+            "avatar": "",
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": 2,
+        "fields": {
+            "password": "pbkdf2_sha256$720000$19ihX0ucOaWg19V539Pech$ihgXYylubXengq1ssKSc8/zMWKMtByo5WoFI6k1DJiw=",
+            "last_login": "2025-05-24T08:02:46.909Z",
+            "is_superuser": false,
+            "is_staff": true,
+            "is_active": true,
+            "date_joined": "2025-05-24T07:49:19.352Z",
+            "email": "moderator@bags.ru",
+            "first_name": "Moderator",
+            "last_name": "Moderatorov",
+            "role": "manager",
+            "is_verified": false,
+            "verification_code": null,
+            "verification_code_created_at": null,
+            "new_email": null,
+            "email_verification_token": null,
+            "new_password": null,
+            "password_verification_token": null,
+            "avatar": "",
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": 3,
+        "fields": {
+            "password": "pbkdf2_sha256$720000$y3Cy7sCR5VPbvChKLec3jk$DuEzeN+reQnaJXanJNxpP92LXJxGCekF8J8FGtZ9Khs=",
+            "last_login": null,
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-05-24T07:49:19.631Z",
+            "email": "user@bags.ru",
+            "first_name": "User",
+            "last_name": "Userov",
+            "role": "user",
+            "is_verified": false,
+            "verification_code": null,
+            "verification_code_created_at": null,
+            "new_email": null,
+            "email_verification_token": null,
+            "new_password": null,
+            "password_verification_token": null,
+            "avatar": "",
+            "groups": [],
+            "user_permissions": []
+        }
+    }
+]

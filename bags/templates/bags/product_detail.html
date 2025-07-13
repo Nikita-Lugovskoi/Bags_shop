@@ -1,0 +1,1800 @@
+{% extends 'bags/base.html' %}
+{% load humanize %}
+{% load static %}
+{% load bags_extras %}
+
+{% block title %}{{ product.name }} - Магазин сумочек из бусин{% endblock %}
+
+{% block breadcrumbs %}
+<div class="container mt-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'bags:home' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'bags:product_list' %}">Каталог</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'bags:product_list_by_category' product.category.id %}">{{ product.category.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </nav>
+</div>
+{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        --warning-gradient: linear-gradient(135deg, #ff5858 0%, #f09819 100%);
+        --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --card-shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .product-detail-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 40px 0;
+        margin-top: -50px;
+        margin-bottom: 50px;
+        text-align: center;
+    }
+
+    .product-detail-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+    }
+
+    .product-detail-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .product-detail-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        padding: 40px;
+        margin-bottom: 40px;
+        border: none;
+    }
+
+    .product-gallery {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+
+    .product-main-image {
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 20px;
+        height: 520px;
+        min-height: 350px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .product-main-image img {
+        max-width: 95%;
+        max-height: 95%;
+        object-fit: contain;
+        border-radius: 12px;
+        transition: var(--transition);
+        box-shadow: 0 6px 32px rgba(102, 126, 234, 0.10);
+    }
+
+    .product-main-image img:hover {
+        transform: scale(1.05);
+    }
+
+    .product-thumbnails {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    .product-thumbnail {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        border: 3px solid transparent;
+        transition: var(--transition);
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .product-thumbnail.active {
+        border-color: #667eea;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .product-thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .product-info {
+        padding: 0 20px;
+    }
+
+    .product-name {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #2d3436;
+        margin-bottom: 20px;
+        line-height: 1.2;
+    }
+
+    .product-category {
+        display: inline-block;
+        background: var(--accent-gradient);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 25px;
+    }
+
+    .product-price {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #00b894;
+        margin-bottom: 25px;
+        text-shadow: 0 2px 8px rgba(0, 184, 148, 0.2);
+    }
+
+    .product-description {
+        color: #636e72;
+        font-size: 1.1rem;
+        line-height: 1.7;
+        margin-bottom: 30px;
+    }
+
+    .product-specs {
+        background: #f8f9fa;
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+
+    .spec-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .spec-item:last-child {
+        border-bottom: none;
+    }
+
+    .spec-label {
+        font-weight: 600;
+        color: #2d3436;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .spec-value {
+        color: #636e72;
+        font-weight: 500;
+    }
+
+    .product-availability {
+        background: var(--success-gradient);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(67, 233, 123, 0.3);
+    }
+
+    .product-availability.unavailable {
+        background: var(--warning-gradient);
+        box-shadow: 0 4px 15px rgba(255, 88, 88, 0.3);
+    }
+
+    .product-actions {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    .btn-product-action {
+        padding: 15px 30px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: var(--transition);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-action {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary-action:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .btn-outline-action {
+        background: transparent;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .btn-outline-action:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-3px);
+    }
+
+    .btn-danger-action {
+        background: var(--warning-gradient);
+        color: white;
+        border: none;
+    }
+
+    .btn-danger-action:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(255, 88, 88, 0.3);
+        color: white;
+    }
+
+    .product-rating {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+
+    .rating-summary {
+        display: flex;
+        gap: 40px;
+        align-items: flex-start;
+    }
+
+    .average-rating {
+        text-align: center;
+        min-width: 150px;
+    }
+
+    .rating-value {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #2d3436;
+        line-height: 1;
+    }
+
+    .stars {
+        margin: 15px 0;
+    }
+
+    .stars i {
+        font-size: 1.5rem;
+        margin: 0 2px;
+        color: #ffc107;
+        text-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+    }
+
+    .reviews-count {
+        color: #636e72;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .rating-distribution {
+        flex: 1;
+    }
+
+    .rating-bar {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 12px;
+    }
+
+    .rating-label {
+        min-width: 80px;
+        color: #2d3436;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .progress {
+        flex: 1;
+        background-color: #e9ecef;
+        border-radius: 8px;
+        overflow: hidden;
+        height: 12px;
+    }
+
+    .section-block {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        padding: 40px;
+        margin-bottom: 40px;
+    }
+
+    .section-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #2d3436;
+        margin-bottom: 30px;
+        text-align: center;
+        position: relative;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 4px;
+        background: var(--primary-gradient);
+        border-radius: 2px;
+    }
+
+    .description-content {
+        color: #636e72;
+        line-height: 1.8;
+        font-size: 1.1rem;
+    }
+
+    .features-list, .care-list {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .feature-item, .care-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+        padding: 20px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 16px;
+        transition: var(--transition);
+    }
+
+    .feature-item:hover, .care-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-icon, .care-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .care-icon {
+        background: var(--accent-gradient);
+        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+    }
+
+    .feature-content, .care-content {
+        flex: 1;
+    }
+
+    .feature-content h4, .care-content h4 {
+        color: #2d3436;
+        font-weight: 700;
+        margin-bottom: 8px;
+        font-size: 1.1rem;
+    }
+
+    .feature-content p, .care-content p {
+        color: #636e72;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .service-card {
+        text-align: center;
+        padding: 30px 20px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 16px;
+        transition: var(--transition);
+        height: 100%;
+    }
+
+    .service-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+
+    .service-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--success-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        margin: 0 auto 20px;
+        box-shadow: 0 8px 25px rgba(67, 233, 123, 0.3);
+    }
+
+    .service-card h4 {
+        color: #2d3436;
+        font-weight: 700;
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+    }
+
+    .service-card p {
+        color: #636e72;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .similar-products {
+        background: #f8f9fa;
+        padding: 60px 0;
+        margin-top: 60px;
+    }
+
+    .similar-products-container {
+        position: relative;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .similar-products-scroll {
+        display: flex;
+        gap: 20px;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        padding: 20px 0;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .similar-products-scroll::-webkit-scrollbar {
+        display: none;
+    }
+
+    .similar-product-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        border: none;
+        overflow: hidden;
+        min-width: 280px;
+        flex-shrink: 0;
+    }
+
+    .similar-product-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .similar-product-image {
+        height: 200px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .similar-product-image img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+
+    .similar-product-content {
+        padding: 20px;
+    }
+
+    .similar-product-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2d3436;
+        margin-bottom: 10px;
+        line-height: 1.3;
+    }
+
+    .similar-product-price {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #00b894;
+        margin-bottom: 15px;
+    }
+
+    .btn-similar {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: var(--transition);
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-similar:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    .scroll-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: white;
+        border: none;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition);
+        z-index: 10;
+    }
+
+    .scroll-btn:hover {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .scroll-btn.scroll-left {
+        left: 10px;
+    }
+
+    .scroll-btn.scroll-right {
+        right: 10px;
+    }
+
+    .scroll-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: translateY(-50%);
+    }
+
+    .scroll-btn:disabled:hover {
+        background: white;
+        color: #6c757d;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transform: translateY(-50%);
+    }
+
+    @media (max-width: 768px) {
+        .product-detail-title {
+            font-size: 2rem;
+        }
+        
+        .product-name {
+            font-size: 1.8rem;
+        }
+        
+        .product-price {
+            font-size: 2rem;
+        }
+        
+        .rating-summary {
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .product-actions {
+            flex-direction: column;
+        }
+        
+        .btn-product-action {
+            width: 100%;
+            justify-content: center;
+            min-height: 44px;
+            font-size: 16px;
+            padding: 12px 20px;
+        }
+        
+        .product-gallery {
+            margin-bottom: 30px;
+        }
+        
+        .main-image {
+            height: 300px;
+        }
+        
+        .thumbnail {
+            height: 60px;
+            width: 60px;
+        }
+        
+        .spec-item {
+            padding: 15px 0;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .spec-label {
+            font-size: 0.95rem;
+        }
+        
+        .spec-value {
+            font-size: 0.95rem;
+        }
+        
+        .review-form-container {
+            padding: 20px;
+        }
+        
+        .review-textarea {
+            font-size: 16px;
+            min-height: 120px;
+            padding: 15px;
+        }
+        
+        .submit-review {
+            min-height: 44px;
+            font-size: 16px;
+            padding: 12px 24px;
+        }
+        
+        .star-label {
+            font-size: 1.8rem;
+            padding: 0.3rem;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 992px) {
+        .product-main-image {
+            height: 350px;
+            min-height: 200px;
+        }
+    }
+    @media (max-width: 576px) {
+        .product-detail-title {
+            font-size: 1.8rem;
+        }
+        
+        .product-name {
+            font-size: 1.6rem;
+        }
+        
+        .product-price {
+            font-size: 1.8rem;
+        }
+        
+        .main-image {
+            height: 250px;
+        }
+        
+        .thumbnail {
+            height: 50px;
+            width: 50px;
+        }
+        
+        .product-actions {
+            gap: 10px;
+        }
+        
+        .btn-product-action {
+            padding: 15px 20px;
+        }
+        
+        .product-info {
+            padding: 20px 15px;
+        }
+        
+        .specs-section {
+            padding: 20px 15px;
+        }
+        
+        .reviews-section {
+            padding: 20px 15px;
+        }
+        
+        .product-main-image {
+            height: 220px;
+            min-height: 120px;
+            padding: 8px;
+        }
+        .product-main-image img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+    }
+
+    /* Стили для уведомлений */
+    .notification-container {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        max-width: 500px;
+        width: 90%;
+    }
+
+    .notification-alert {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        border: none;
+        padding: 20px 25px;
+        margin-bottom: 10px;
+        font-size: 1rem;
+        line-height: 1.5;
+        animation: slideInDown 0.3s ease-out;
+    }
+
+    .notification-alert.alert-success {
+        border-left: 4px solid #00b894;
+        background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
+        color: #2d3436;
+    }
+
+    .notification-alert.alert-danger {
+        border-left: 4px solid #e74c3c;
+        background: linear-gradient(135deg, #fff8f8 0%, #ffe8e8 100%);
+        color: #2d3436;
+    }
+
+    .notification-alert .btn-close {
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        color: #636e72;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+
+    .notification-alert .btn-close:hover {
+        opacity: 1;
+    }
+
+    @keyframes slideInDown {
+        from {
+            transform: translateX(-50%) translateY(-100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .progress-bar {
+        background: var(--accent-gradient);
+        border-radius: 8px;
+        height: 100%;
+    }
+
+    /* Стили для отзывов */
+    .review-form-container {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 16px;
+        padding: 30px;
+        margin-bottom: 40px;
+    }
+
+    .review-form-title {
+        color: #2d3436;
+        font-weight: 700;
+        margin-bottom: 25px;
+        font-size: 1.3rem;
+    }
+
+    .rating-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .rating-stars {
+        display: flex;
+        flex-direction: row-reverse;
+        gap: 0.25rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .star-input {
+        display: none;
+    }
+
+    .star-label {
+        cursor: pointer;
+        font-size: 1.5rem;
+        color: #e9ecef;
+        transition: all 0.2s ease;
+        padding: 0.25rem;
+    }
+
+    .star-label:hover,
+    .star-label:hover ~ .star-label,
+    .star-input:checked ~ .star-label {
+        color: #ffc107;
+        transform: scale(1.1);
+    }
+
+    .rating-text {
+        font-size: 0.9rem;
+        color: #636e72;
+        transition: all 0.2s ease;
+        text-align: center;
+        min-height: 1.25rem;
+    }
+
+    .review-textarea {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        resize: vertical;
+        min-height: 100px;
+        transition: all 0.2s ease;
+        font-size: 1rem;
+        line-height: 1.5;
+        margin-bottom: 20px;
+        background: white;
+    }
+
+    .review-textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .submit-review {
+        background: var(--primary-gradient);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: var(--transition);
+        position: relative;
+    }
+
+    .submit-review:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .submit-review .btn-loader {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .submit-review.loading .btn-text {
+        visibility: hidden;
+    }
+
+    .submit-review.loading .btn-loader {
+        display: block;
+    }
+
+    .reviews-header h3 {
+        color: #2d3436;
+        font-weight: 700;
+        font-size: 1.3rem;
+    }
+
+    .reviews-sorting .form-select {
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+
+    .review-item {
+        background: white;
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        border: 1px solid #e9ecef;
+        transition: var(--transition);
+    }
+
+    .review-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+    
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .review-user {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex: 1;
+    }
+    
+    .review-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .review-avatar-placeholder {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        border: 3px solid white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .review-user-info h4 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: #2d3436;
+        font-weight: 600;
+    }
+    
+    .review-date {
+        color: #636e72;
+        font-size: 0.9rem;
+        margin-top: 2px;
+    }
+    
+    .review-rating {
+        display: flex;
+        gap: 3px;
+    }
+    
+    .review-rating i {
+        font-size: 1.1rem;
+        color: #ffc107;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .review-content {
+        color: #495057;
+        line-height: 1.6;
+        margin-bottom: 15px;
+        font-size: 1rem;
+    }
+    
+    .review-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #f8f9fa;
+    }
+
+    .review-actions .btn {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        border-radius: 8px;
+        transition: var(--transition);
+    }
+    
+    .review-actions .btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .pagination {
+        margin-top: 30px;
+    }
+
+    .pagination .page-link {
+        border-radius: 8px;
+        margin: 0 2px;
+        border: 2px solid #e9ecef;
+        color: #636e72;
+        transition: var(--transition);
+    }
+    
+    .pagination .page-link:hover {
+        background: var(--primary-gradient);
+        border-color: #667eea;
+        color: white;
+    }
+
+    .pagination .page-item.active .page-link {
+        background: var(--primary-gradient);
+        border-color: #667eea;
+        color: white;
+    }
+</style>
+
+<!-- Product Detail Header -->
+<section class="product-detail-header">
+    <div class="container">
+        <h1 class="product-detail-title">{{ product.name }}</h1>
+        <p class="product-detail-subtitle">Детальная информация о товаре</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="product-detail-container">
+        <div class="row">
+            <!-- Галерея изображений -->
+            <div class="col-lg-6">
+                <div class="product-gallery">
+                    <div class="product-main-image">
+                        <img src="{{ product.image.url }}" id="mainImage" alt="{{ product.name }}">
+                    </div>
+                    
+                    {% if product.images.exists %}
+                    <div class="product-thumbnails">
+                        <div class="product-thumbnail active" onclick="changeImage('{{ product.image.url }}')">
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        </div>
+                        {% for image in product.images.all %}
+                        <div class="product-thumbnail" onclick="changeImage('{{ image.image.url }}')">
+                            <img src="{{ image.image.url }}" alt="{{ product.name }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Информация о товаре -->
+            <div class="col-lg-6">
+                <div class="product-info">
+                    <h1 class="product-name">{{ product.name }}</h1>
+                    <div class="product-category">
+                        <i class="fas fa-tag"></i> {{ product.category.name }}
+                    </div>
+                    
+                    <div class="product-price">{{ product.price|floatformat:0|intcomma }} ₽</div>
+                    
+                    <!-- <div class="product-description">
+                        {{ product.description }}
+                    </div> -->
+
+                    <div class="product-specs">
+                        <div class="spec-item">
+                            <span class="spec-label">
+                                <i class="fas fa-ruler-vertical"></i> Высота
+                            </span>
+                            <span class="spec-value">{{ product.height }} см</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">
+                                <i class="fas fa-ruler-horizontal"></i> Длина
+                            </span>
+                            <span class="spec-value">{{ product.length }} см</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">
+                                <i class="fas fa-arrows-alt-h"></i> Глубина
+                            </span>
+                            <span class="spec-value">{{ product.depth }} см</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">
+                                <i class="fas fa-gem"></i> Материалы
+                            </span>
+                            <span class="spec-value">{{ product.materials }}</span>
+                        </div>
+                        {% if product.hardware_color %}
+                        <div class="spec-item">
+                            <span class="spec-label">
+                                <i class="fas fa-link"></i> Цвет фурнитуры
+                            </span>
+                            <span class="spec-value">{{ product.hardware_color }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="product-availability {% if not product.in_stock %}unavailable{% endif %}">
+                        {% if product.in_stock %}
+                            <i class="fas fa-check-circle"></i> В наличии 1 шт
+                        {% else %}
+                            <i class="fas fa-clock"></i> На заказ
+                        {% endif %}
+                    </div>
+
+                    {% if user.is_authenticated %}
+                        <div class="product-actions">
+                            {% if product.in_stock %}
+                                <form method="post" action="{% url 'bags:add_to_cart' product.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-product-action btn-primary-action">
+                                        <i class="fas fa-shopping-cart"></i> В корзину
+                                    </button>
+                                </form>
+                            {% endif %}
+                            
+                            {% if product in user.favorite_set.all %}
+                                <a href="{% url 'bags:remove_from_favorites' product.id %}" class="btn-product-action btn-danger-action">
+                                    <i class="fas fa-heart"></i> В избранном
+                                </a>
+                            {% else %}
+                                <a href="{% url 'bags:add_to_favorites' product.id %}" class="btn-product-action btn-outline-action">
+                                    <i class="far fa-heart"></i> В избранное
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            Для покупки необходимо <a href="{% url 'users:user_login' %}">войти</a> в систему
+                        </div>
+                    {% endif %}
+
+                    <div class="product-rating">
+                        <div class="rating-summary">
+                            <div class="average-rating">
+                                <span class="rating-value">{{ product.get_average_rating|floatformat:1 }}</span>
+                                <div class="stars">
+                                    {% with ''|center:5 as range %}
+                                    {% for _ in range %}
+                                        {% if forloop.counter <= product.get_average_rating %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% endwith %}
+                                </div>
+                                <span class="reviews-count">{{ product.get_reviews_count }} отзывов</span>
+                            </div>
+                            
+                            <div class="rating-distribution">
+                                {% for rating in "54321"|make_list %}
+                                    <div class="rating-bar">
+                                        <span class="rating-label">{{ rating }} <i class="fas fa-star"></i></span>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ product.get_rating_percentage|get_item:rating }}%">
+                                            </div>
+                                        </div>
+                                        <span class="rating-count">{{ product.get_rating_distribution|get_item:rating }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Блок описания -->
+    <div class="section-block">
+        <h2 class="section-title">Описание товара</h2>
+        <div class="description-content">
+            {{ product.description|linebreaks }}
+        </div>
+    </div>
+
+    <!-- Дополнительная информация -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="section-block">
+                <h2 class="section-title">Особенности</h2>
+                <div class="features-list">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-hand-holding-heart"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Ручная работа</h4>
+                            <p>Каждая сумка создается вручную с особой заботой и вниманием к деталям</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Уникальный дизайн</h4>
+                            <p>Эксклюзивные модели, которые вы не найдете в массовых магазинах</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="feature-content">
+                            <h4>Качественные материалы</h4>
+                            <p>Используем только проверенные материалы для долговечности</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6">
+            <div class="section-block">
+                <h2 class="section-title">Уход за изделием</h2>
+                <div class="care-list">
+                    <div class="care-item">
+                        <div class="care-icon">
+                            <i class="fas fa-broom"></i>
+                        </div>
+                        <div class="care-content">
+                            <h4>Очистка</h4>
+                            <p>Протирайте мягкой сухой тканью. Избегайте влажной чистки</p>
+                        </div>
+                    </div>
+                    <div class="care-item">
+                        <div class="care-icon">
+                            <i class="fas fa-sun"></i>
+                        </div>
+                        <div class="care-content">
+                            <h4>Хранение</h4>
+                            <p>Храните в сухом месте, защищенном от прямых солнечных лучей</p>
+                        </div>
+                    </div>
+                    <div class="care-item">
+                        <div class="care-icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="care-content">
+                            <h4>Транспортировка</h4>
+                            <p>При перевозке используйте мягкую упаковку для защиты</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Доставка и гарантии
+    <div class="section-block">
+        <h2 class="section-title">Доставка и гарантии</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <h4>Быстрая доставка</h4>
+                    <p>Доставляем по всей России. Сроки доставки 3-7 дней</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-undo"></i>
+                    </div>
+                    <h4>Возврат 14 дней</h4>
+                    <p>Возможность вернуть товар в течение 14 дней с момента получения</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h4>Поддержка 24/7</h4>
+                    <p>Наши специалисты всегда готовы помочь с выбором и ответить на вопросы</p>
+                </div>
+            </div>
+        </div>
+    </div> -->
+
+    <!-- Секция отзывов -->
+    <div class="section-block">
+        <h2 class="section-title">Отзывы о товаре</h2>
+        
+        <!-- Форма добавления отзыва -->
+        {% if user.is_authenticated %}
+            <div class="review-form-container">
+                <h3 class="review-form-title">Оставить отзыв</h3>
+                <form method="post" action="{% url 'bags:add_review' product.id %}" class="review-form" id="review-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <div class="rating-wrapper">
+                            <div class="rating-stars">
+                                {% for i in "54321"|make_list %}
+                                <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" class="star-input" required>
+                                <label for="star{{ i }}" class="star-label">
+                                    <i class="fas fa-star"></i>
+                                </label>
+                                {% endfor %}
+                            </div>
+                            <div class="rating-text">Выберите оценку</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <textarea name="text" class="form-control review-textarea" rows="3" 
+                                  placeholder="Расскажите о вашем опыте использования товара..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary submit-review">
+                        <span class="btn-text">Отправить отзыв</span>
+                        <span class="btn-loader">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </span>
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Чтобы оставить отзыв, пожалуйста, 
+                <a href="{% url 'users:user_login' %}">войдите</a> в систему
+            </div>
+        {% endif %}
+        
+        <!-- Список отзывов -->
+        <div class="reviews-list">
+            {% if reviews %}
+                <div class="reviews-header mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">Отзывы ({{ reviews.paginator.count }})</h3>
+                        <div class="reviews-sorting">
+                            <select class="form-select" id="reviews-sort">
+                                <option value="newest">Сначала новые</option>
+                                <option value="oldest">Сначала старые</option>
+                                <option value="helpful">Сначала полезные</option>
+                                <option value="rating-high">Сначала высокие оценки</option>
+                                <option value="rating-low">Сначала низкие оценки</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                {% for review in reviews %}
+                    <div class="review-item" id="review-{{ review.id }}" 
+                         data-rating="{{ review.rating }}"
+                         data-helpful="{{ review.get_helpful_votes }}"
+                         data-date="{{ review.created_at|date:'Y-m-d' }}">
+                        <div class="review-header">
+                            <div class="review-user">
+                                {% if review.user.avatar %}
+                                    <img src="{{ review.user.avatar.url }}" 
+                                         alt="{{ review.user.get_full_name }}" 
+                                         class="review-avatar">
+                                {% else %}
+                                    <div class="review-avatar-placeholder">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="review-user-info h4">
+                                    {{ review.user.get_full_name }}
+                                </div>
+                            </div>
+                            <div class="review-rating">
+                                {% with ''|center:5 as range %}
+                                {% for _ in range %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            {{ review.text }}
+                        </div>
+                        
+                        {% if user == review.user %}
+                            <div class="review-actions">
+                                <form method="post" action="{% url 'bags:delete_review' review.id %}" class="d-inline delete-review-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger delete-review" 
+                                            data-review-id="{{ review.id }}">
+                                        <i class="fas fa-trash"></i> Удалить
+                                    </button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                
+                <!-- Пагинация отзывов -->
+                {% if reviews.has_other_pages %}
+                    <nav aria-label="Навигация по отзывам">
+                        <ul class="pagination justify-content-center">
+                            {% if reviews.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ reviews.previous_page_number }}#reviews">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in reviews.paginator.page_range %}
+                                {% if reviews.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}#reviews">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if reviews.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ reviews.next_page_number }}#reviews">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Пока нет отзывов. Будьте первым!
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Похожие товары -->
+    {% if similar_products %}
+    <section class="similar-products">
+        <div class="container">
+            <h2 class="section-title">Похожие товары</h2>
+            <div class="similar-products-container">
+                <div class="similar-products-scroll">
+                    {% for similar_product in similar_products %}
+                    <div class="similar-product-card">
+                        <div class="similar-product-image">
+                            {% if similar_product.image %}
+                                <img src="{{ similar_product.image.url }}" alt="{{ similar_product.name }}">
+                            {% else %}
+                                <img src="https://via.placeholder.com/300x300" alt="Нет изображения">
+                            {% endif %}
+                        </div>
+                        <div class="similar-product-content">
+                            <h5 class="similar-product-title">{{ similar_product.name }}</h5>
+                            <p class="similar-product-price">{{ similar_product.price|floatformat:0|intcomma }} ₽</p>
+                            <a href="{% url 'bags:product_detail' similar_product.slug %}" class="btn-similar">
+                                <i class="fas fa-eye"></i> Подробнее
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="scroll-btn scroll-left">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="scroll-btn scroll-right">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+</div>
+
+<script>
+function changeImage(imageUrl) {
+    document.getElementById('mainImage').src = imageUrl;
+    
+    // Обновляем активную миниатюру
+    document.querySelectorAll('.product-thumbnail').forEach(thumb => {
+        thumb.classList.remove('active');
+    });
+    event.target.closest('.product-thumbnail').classList.add('active');
+}
+
+// Функциональность прокрутки похожих товаров
+document.addEventListener('DOMContentLoaded', function() {
+    const scrollContainer = document.querySelector('.similar-products-scroll');
+    const leftBtn = document.querySelector('.scroll-btn.scroll-left');
+    const rightBtn = document.querySelector('.scroll-btn.scroll-right');
+    
+    if (!scrollContainer || !leftBtn || !rightBtn) return;
+    
+    const scrollAmount = 300;
+    
+    // Функция для обновления состояния кнопок
+    function updateScrollButtons() {
+        const isAtStart = scrollContainer.scrollLeft === 0;
+        const isAtEnd = scrollContainer.scrollLeft >= scrollContainer.scrollWidth - scrollContainer.clientWidth;
+        
+        leftBtn.disabled = isAtStart;
+        rightBtn.disabled = isAtEnd;
+    }
+    
+    // Обработчики для кнопок прокрутки
+    leftBtn.addEventListener('click', function() {
+        scrollContainer.scrollBy({
+            left: -scrollAmount,
+            behavior: 'smooth'
+        });
+    });
+    
+    rightBtn.addEventListener('click', function() {
+        scrollContainer.scrollBy({
+            left: scrollAmount,
+            behavior: 'smooth'
+        });
+    });
+    
+    // Обновляем состояние кнопок при прокрутке
+    scrollContainer.addEventListener('scroll', updateScrollButtons);
+    
+    // Инициализируем состояние кнопок
+    updateScrollButtons();
+});
+
+// Функциональность отзывов
+document.addEventListener('DOMContentLoaded', function() {
+    const reviewForm = document.getElementById('review-form');
+    const submitButton = document.querySelector('.submit-review');
+    const ratingText = document.querySelector('.rating-text');
+    const ratingLabels = document.querySelectorAll('.star-label');
+    
+    // Функция создания элемента отзыва
+    function createReviewElement(review) {
+        const reviewHtml = `
+            <div class="review-item" id="review-${review.id}" 
+                 data-rating="${review.rating}"
+                 data-helpful="${review.helpful_votes}"
+                 data-date="${review.created_at}">
+                <div class="review-header">
+                    <div class="review-user">
+                        ${review.user.avatar ? 
+                            `<img src="${review.user.avatar}" alt="${review.user.full_name}" class="review-avatar">` :
+                            `<div class="review-avatar-placeholder"><i class="fas fa-user"></i></div>`
+                        }
+                        <div class="review-user-info">
+                            <h4>${review.user.full_name}</h4>
+                            <div class="review-date">${review.created_at}</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">
+                        ${Array(5).fill().map((_, i) => 
+                            `<i class="${i < review.rating ? 'fas' : 'far'} fa-star text-warning"></i>`
+                        ).join('')}
+                    </div>
+                </div>
+                <div class="review-content">
+                    ${review.text}
+                </div>
+                <div class="review-actions">
+                    <form method="post" action="/bags/delete_review/${review.id}/" class="d-inline delete-review-form">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger delete-review" 
+                                data-review-id="${review.id}">
+                            <i class="fas fa-trash"></i> Удалить
+                        </button>
+                    </form>
+                </div>
+            </div>
+        `;
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = reviewHtml;
+        return tempDiv.firstElementChild;
+    }
+    
+    // Получаем CSRF-токен из cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Функция показа уведомлений
+    function showNotification(message, type = 'success') {
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        
+        // Создаем или получаем контейнер для уведомлений
+        let notificationContainer = document.querySelector('.notification-container');
+        if (!notificationContainer) {
+            notificationContainer = document.createElement('div');
+            notificationContainer.className = 'notification-container';
+            document.body.appendChild(notificationContainer);
+        }
+        
+        const notification = document.createElement('div');
+        notification.className = `alert ${alertClass} notification-alert alert-dismissible fade show`;
+        notification.innerHTML = `
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        // Добавляем уведомление в контейнер
+        notificationContainer.appendChild(notification);
+        
+        // Автоматически скрываем через 5 секунд
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+    
+    // Обработка отправки формы
+    if (reviewForm) {
+        reviewForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const rating = document.querySelector('.star-input:checked');
+            if (!rating) {
+                showNotification('Пожалуйста, выберите оценку', 'danger');
+                return;
+            }
+            
+            const formData = new FormData(this);
+            submitButton.classList.add('loading');
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Сбрасываем форму
+                    this.reset();
+                    ratingText.textContent = 'Выберите оценку';
+                    ratingText.style.color = '#636e72';
+                    // Показываем только уведомление, отзыв не добавляем в DOM
+                    showNotification(data.message);
+                } else {
+                    showNotification(data.message || 'Ошибка при отправке отзыва', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Произошла ошибка при отправке отзыва', 'danger');
+            })
+            .finally(() => {
+                submitButton.classList.remove('loading');
+            });
+        });
+    }
+    
+    // Обработка удаления отзывов
+    document.querySelectorAll('.delete-review-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            if (!confirm('Вы уверены, что хотите удалить этот отзыв?')) {
+                e.preventDefault();
+            }
+        });
+    });
+    
+    // Функция обновления рейтинга товара
+    function updateProductRating(averageRating, reviewsCount) {
+        // Обновляем средний рейтинг
+        const ratingValue = document.querySelector('.rating-value');
+        if (ratingValue) {
+            ratingValue.textContent = parseFloat(averageRating).toFixed(1);
+        }
+
+        // Обновляем звезды
+        const stars = document.querySelectorAll('.average-rating .stars i');
+        stars.forEach((star, index) => {
+            if (index < Math.round(averageRating)) {
+                star.className = 'fas fa-star';
+            } else {
+                star.className = 'far fa-star';
+            }
+        });
+
+        // Обновляем количество отзывов
+        const reviewsCountElement = document.querySelector('.reviews-count');
+        if (reviewsCountElement) {
+            reviewsCountElement.textContent = `${reviewsCount} отзывов`;
+        }
+    }
+    
+    // Обновление текста при наведении на звезды
+    ratingLabels.forEach(label => {
+        label.addEventListener('mouseenter', function() {
+            const rating = this.previousElementSibling.value;
+            const texts = {
+                '5': 'Всё очень понравилось!',
+                '4': 'Понравилось',
+                '3': 'Нормально',
+                '2': 'Не понравилось',
+                '1': 'Совсем не понравилось'
+            };
+            ratingText.textContent = texts[rating];
+            ratingText.style.color = '#2d3436';
+        });
+        
+        label.addEventListener('mouseleave', function() {
+            const checkedRating = document.querySelector('.star-input:checked');
+            if (checkedRating) {
+                const texts = {
+                    '5': 'Всё очень понравилось!',
+                    '4': 'Понравилось',
+                    '3': 'Нормально',
+                    '2': 'Не понравилось',
+                    '1': 'Совсем не понравилось'
+                };
+                ratingText.textContent = texts[checkedRating.value];
+            } else {
+                ratingText.textContent = 'Выберите оценку';
+                ratingText.style.color = '#636e72';
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

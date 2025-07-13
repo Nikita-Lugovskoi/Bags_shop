@@ -1,0 +1,17 @@
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'bags:cart' %}">
+                                <i class="fas fa-shopping-cart"></i> Корзина
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'bags:favorites' %}">
+                                <i class="fas fa-heart"></i> Избранное
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'bags:order_history' %}">
+                                <i class="fas fa-history"></i> История заказов
+                            </a>
+                        </li>
+                    {% endif %} 

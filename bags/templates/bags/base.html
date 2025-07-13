@@ -1,0 +1,936 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#6c5ce7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>{% block title %}Магазин сумочек из бусин{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a8a4e6;
+            --accent-color: #fd79a8;
+            --text-color: #2d3436;
+            --light-bg: #f8f9fa;
+            --white: #ffffff;
+        }
+        
+        html, body {
+            height: 100%;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: var(--text-color);
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        .main-content {
+            flex: 1 0 auto;
+            margin-top: 70px; /* Высота навбара */
+        }
+        
+        .footer {
+            flex-shrink: 0;
+            background-color: var(--light-bg);
+            padding: 2rem 0 1rem 0;
+            margin-top: auto;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+            padding: 0.8rem 0;
+            transition: all 0.3s ease;
+            height: 70px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .navbar.scrolled {
+            padding: 0.5rem 0;
+            background: rgba(255, 255, 255, 0.98);
+        }
+        
+        .navbar .container {
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: var(--primary-color) !important;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: transform 0.3s ease;
+            white-space: nowrap;
+            margin-right: 2rem;
+        }
+        
+        .navbar-brand:hover {
+            transform: translateY(-2px);
+        }
+        
+        .navbar-brand i {
+            color: var(--accent-color);
+            font-size: 1.6rem;
+        }
+        
+        .nav-link {
+            color: var(--text-color) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            margin: 0 0.2rem;
+            white-space: nowrap;
+            height: 40px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-link i {
+            margin-right: 0.5rem;
+            font-size: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+            background: rgba(108, 92, 231, 0.08);
+            transform: translateY(-1px);
+        }
+        
+        .nav-link.active {
+            color: var(--primary-color) !important;
+            background: rgba(108, 92, 231, 0.1);
+        }
+        
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+        
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            border-radius: 16px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            animation: dropdownFade 0.3s ease;
+        }
+        
+        @keyframes dropdownFade {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .dropdown-item {
+            padding: 0.7rem 1.2rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .dropdown-item i {
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .dropdown-item:hover {
+            background: rgba(108, 92, 231, 0.08);
+            color: var(--primary-color);
+            transform: translateX(5px);
+        }
+        
+        .search-form {
+            position: relative;
+            margin: 0 1.5rem;
+            height: 40px;
+        }
+        
+        .search-input {
+            border: 2px solid rgba(108, 92, 231, 0.1);
+            background: var(--light-bg);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            padding-right: 2.5rem;
+            width: 200px;
+            height: 100%;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+        
+        .search-input:focus {
+            width: 250px;
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1);
+        }
+        
+        .search-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .search-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            height: 40px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+        
+        .user-avatar:hover {
+            transform: scale(1.1);
+        }
+        
+        .cart-icon, .favorites-icon {
+            position: relative;
+            font-size: 1.2rem;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+        
+        .cart-icon:hover, .favorites-icon:hover {
+            color: var(--primary-color);
+            background: rgba(108, 92, 231, 0.08);
+        }
+        
+        /* Стили для иконки корзины в истории заказов */
+        .order-history .cart-icon,
+        .my-orders .cart-icon {
+            font-size: 1rem;
+            width: 32px;
+            height: 32px;
+        }
+        
+        .order-history .cart-count,
+        .my-orders .cart-count {
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            top: -6px;
+            right: -6px;
+        }
+        
+        /* Стили для иконки корзины в навигации */
+        .navbar .cart-icon {
+            font-size: 1.2rem;
+            width: 40px;
+            height: 40px;
+        }
+        
+        .navbar .cart-count {
+            width: 22px;
+            height: 22px;
+            font-size: 0.75rem;
+            top: -8px;
+            right: -8px;
+        }
+        
+        .btn-outline-primary, .btn-primary {
+            height: 40px;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            color: var(--white);
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 991.98px) {
+            .navbar {
+                height: auto;
+                padding: 0.5rem 0;
+            }
+            
+            .navbar-collapse {
+                background: var(--white);
+                padding: 1rem;
+                border-radius: 12px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+                margin-top: 0.5rem;
+            }
+            
+            .nav-link {
+                height: auto;
+                padding: 0.7rem 1rem !important;
+                margin: 0.2rem 0;
+                min-height: 44px; /* Touch-friendly */
+                display: flex;
+                align-items: center;
+            }
+            
+            .search-form {
+                margin: 1rem 0;
+                width: 100%;
+                height: 45px;
+            }
+            
+            .search-input {
+                width: 100%;
+                font-size: 16px; /* Prevent zoom on iOS */
+                min-height: 44px;
+            }
+            
+            .search-input:focus {
+                width: 100%;
+            }
+            
+            .user-menu {
+                margin-top: 1rem;
+                justify-content: center;
+                flex-wrap: wrap;
+                height: auto;
+                gap: 0.5rem;
+            }
+            
+            .cart-icon, .favorites-icon {
+                width: 45px;
+                height: 45px;
+                min-height: 44px; /* Touch-friendly */
+            }
+            
+            .btn-outline-primary, .btn-primary {
+                width: 100%;
+                height: 45px;
+                margin: 0.2rem 0;
+                min-height: 44px; /* Touch-friendly */
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+        }
+
+        /* Дополнительные мобильные стили */
+        @media (max-width: 576px) {
+            .navbar-brand {
+                font-size: 1.2rem;
+            }
+            
+            .navbar-brand i {
+                font-size: 1.4rem;
+            }
+            
+            .search-input {
+                font-size: 16px;
+                padding: 12px 16px;
+            }
+            
+            .btn {
+                min-height: 44px;
+                font-size: 16px;
+                padding: 12px 20px;
+            }
+            
+            .form-control, .form-select {
+                font-size: 16px;
+                min-height: 44px;
+                padding: 12px 16px;
+            }
+            
+            /* Увеличиваем отступы для touch-friendly */
+            .nav-link {
+                margin: 0.3rem 0;
+                padding: 0.8rem 1.2rem !important;
+            }
+            
+            .dropdown-item {
+                padding: 0.8rem 1.2rem;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+            }
+        }
+
+        .cart-item-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-card .card-img-top {
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .product-card .card-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1.2rem;
+        }
+
+        .product-card .card-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            height: 2.4em;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            font-weight: 600;
+        }
+
+        .product-card .card-text {
+            flex: 1;
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1rem;
+            height: 4.5em;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+
+        .product-card .card-price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .product-card .btn {
+            width: 100%;
+            border-radius: 8px;
+            padding: 0.7rem;
+            font-weight: 500;
+        }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 0.75rem 0;
+            margin-bottom: 1rem;
+        }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "›";
+            font-size: 1.2rem;
+            line-height: 1;
+            color: var(--primary-color);
+        }
+
+        .breadcrumb-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .breadcrumb-item a:hover {
+            color: var(--secondary-color);
+        }
+
+        .breadcrumb-item.active {
+            color: #666;
+        }
+        
+        /* Дополнительные стили для мобильных устройств */
+        .mobile-device .btn {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .mobile-device .nav-link {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .mobile-device .dropdown-item {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Улучшения для touch-friendly элементов */
+        .btn, .nav-link, .dropdown-item, .form-control, .form-select {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* Улучшения для форм на мобильных */
+        .mobile-device input[type="text"],
+        .mobile-device input[type="email"],
+        .mobile-device input[type="password"],
+        .mobile-device input[type="number"],
+        .mobile-device input[type="search"],
+        .mobile-device textarea,
+        .mobile-device select {
+            font-size: 16px !important;
+            -webkit-appearance: none;
+            border-radius: 8px;
+        }
+        
+        /* Улучшения для кнопок на мобильных */
+        .mobile-device .btn {
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .mobile-device .btn:active {
+            transform: scale(0.98);
+        }
+        
+        /* Улучшения для карточек на мобильных */
+        .mobile-device .product-card {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        /* Улучшения для навигации на мобильных */
+        .mobile-device .navbar-collapse {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        /* Улучшения для модальных окон на мобильных */
+        .mobile-device .modal-content {
+            border-radius: 16px;
+        }
+        
+        .mobile-device .modal-header {
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .mobile-device .modal-footer {
+            border-top: 1px solid #e9ecef;
+        }
+    /* Sticky bottom bar for mobile */
+    @media (max-width: 576px) {
+        .mobile-bottom-bar {
+            position: fixed;
+            left: 0; right: 0; bottom: 0;
+            z-index: 1200;
+            background: #fff;
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 60px;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+        }
+        .mobile-bottom-bar a {
+            flex: 1 1 0;
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 1.6rem;
+            padding: 0.5rem 0;
+            transition: background 0.2s;
+        }
+        .mobile-bottom-bar a.active,
+        .mobile-bottom-bar a:active {
+            background: rgba(108,92,231,0.08);
+            border-radius: 12px;
+        }
+        .main-content {
+            padding-bottom: 70px; /* чтобы не перекрывалось контентом */
+        }
+        .product-list, .row {
+            flex-direction: column !important;
+        }
+        .product-card {
+            max-width: 100% !important;
+            margin-bottom: 1.2rem;
+        }
+        .navbar-brand {
+            font-size: 1.4rem;
+        }
+    }
+    /* Кнопка наверх */
+    #scrollTopBtn {
+        display: none;
+        position: fixed;
+        bottom: 80px;
+        right: 18px;
+        z-index: 1300;
+        background: var(--primary-color);
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        font-size: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        transition: opacity 0.3s;
+    }
+    #scrollTopBtn.show {
+        display: block;
+        opacity: 1;
+    }
+    #scrollTopBtn:active {
+        background: var(--secondary-color);
+    }
+    /* Плавная анимация меню */
+    .navbar-collapse.collapse {
+        transition: height 0.3s cubic-bezier(.4,0,.2,1);
+    }
+    @media (min-width: 992px) {
+        /* html, body {
+            overflow-y: hidden;
+        } */
+    }
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            max-width: 500px;
+            width: 90%;
+            pointer-events: none;
+        }
+        .notification-alert {
+            animation: slideInDown 0.4s;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            pointer-events: all;
+        }
+        @keyframes slideInDown {
+            from {
+                transform: translateX(-50%) translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'bags:home' %}">
+                <i class="fas fa-shopping-bag"></i>
+                Магазин сумочек
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'bags:home' %}">
+                            <i class="fas fa-home"></i> Главная
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.resolver_match.url_name == 'product_list' %}active{% endif %}" href="#" id="catalogDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-th-large"></i> Каталог
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'bags:product_list' %}"><i class="fas fa-border-all"></i> Все товары</a></li>
+                            {% for category in categories %}
+                            <li><a class="dropdown-item" href="{% url 'bags:product_list' %}?category={{ category.id }}"><i class="fas fa-tag"></i> {{ category.name }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'bags:popular_products' %}">
+                            <i class="fas fa-star"></i> Популярное
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'bags:home' %}#delivery">
+                            <i class="fas fa-shipping-fast"></i> Доставка
+                        </a>
+                    </li>
+                    <!-- <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-percent"></i> Акции
+                        </a>
+                    </li> -->
+                </ul>
+                
+                <form class="search-form" action="{% url 'bags:product_list' %}" method="get">
+                    <input type="search" name="search" class="search-input" placeholder="Поиск товаров..." value="{{ search_query|default:'' }}">
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+                
+                <div class="user-menu">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'bags:cart' %}" class="cart-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                            {% if cart_items_count > 0 %}
+                            <span class="cart-count">{{ cart_items_count }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="{% url 'bags:favorites' %}" class="favorites-icon">
+                            <i class="fas fa-heart"></i>
+                        </a>
+                        <div class="dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                {% if user.avatar %}
+                                    <img src="{{ user.avatar.url }}" alt="Avatar" class="user-avatar">
+                                {% else %}
+                                    <i class="fas fa-user-circle fa-2x"></i>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'users:user_profile' %}"><i class="fas fa-user"></i> Профиль</a></li>
+                                <li><a class="dropdown-item" href="{% url 'bags:order_history' %}"><i class="fas fa-box"></i> Мои заказы</a></li>
+                                {% if user.is_staff or user.is_superuser %}
+                                <li><a class="dropdown-item" href="/admin/" target="_blank"><i class="fas fa-cogs"></i> Админка</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'users:user_logout' %}"><i class="fas fa-sign-out-alt"></i> Выйти</a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'users:user_login' %}" class="btn btn-outline-primary">Войти</a>
+                        <a href="{% url 'users:user_register' %}" class="btn btn-primary">Регистрация</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {% block breadcrumbs %}{% endblock %}
+
+    <div class="main-content">
+        {% if messages %}
+            <div class="notification-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show notification-alert">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
+                                {{ message }}
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+    <!-- Sticky bottom bar for mobile -->
+    <div class="mobile-bottom-bar d-md-none d-lg-none">
+        <a href="{% url 'bags:cart' %}" class="{% if request.resolver_match.url_name == 'cart' %}active{% endif %}"><i class="fas fa-shopping-cart"></i></a>
+        <a href="{% url 'bags:favorites' %}" class="{% if request.resolver_match.url_name == 'favorites' %}active{% endif %}"><i class="fas fa-heart"></i></a>
+        <a href="{% url 'users:user_profile' %}" class="{% if request.resolver_match.url_name == 'user_profile' %}active{% endif %}"><i class="fas fa-user-circle"></i></a>
+        <a href="{% url 'bags:home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}"><i class="fas fa-home"></i></a>
+    </div>
+    <button id="scrollTopBtn" title="Наверх"><i class="fas fa-chevron-up"></i></button>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>О нас</h5>
+                    <p>Магазин уникальных сумочек ручной работы из бусин.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Контакты</h5>
+                    <p>
+                        <i class="fas fa-phone"></i> +7 (962) 296-48-50<br>
+                        <i class="fas fa-envelope"></i> best-bags-shop@yandex.ru
+                    </p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Мы в соцсетях</h5>
+                    <div class="social-links">
+                        <!-- <a href="#" class="text-dark me-2"><i class="fab fa-vk"></i></a>
+                        <a href="#" class="text-dark me-2"><i class="fab fa-telegram"></i></a>
+                        <a href="#" class="text-dark me-2"><i class="fab fa-instagram"></i></a> -->
+                        <a href="https://wa.me/79622964850" class="text-dark" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <small class="text-muted">
+                        © 2025 Магазин сумок. Все права защищены. 
+                        <a href="{% url 'bags:privacy_policy' %}" class="text-muted text-decoration-none">
+                            <i class="fas fa-shield-alt me-1"></i>Политика конфиденциальности
+                        </a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Мобильная оптимизация -->
+    <script>
+        // Добавляем класс scrolled к навбару при прокрутке
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+        
+        // Lazy loading для изображений
+        document.addEventListener('DOMContentLoaded', function() {
+            const images = document.querySelectorAll('img[data-src]');
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.classList.remove('lazy');
+                        imageObserver.unobserve(img);
+                    }
+                });
+            });
+            
+            images.forEach(img => imageObserver.observe(img));
+        });
+        
+        // Улучшение touch events
+        document.addEventListener('touchstart', function() {}, {passive: true});
+        document.addEventListener('touchmove', function() {}, {passive: true});
+        
+        // Предотвращение двойного тапа для зума на iOS
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // Улучшение производительности скролла
+        document.addEventListener('scroll', function() {
+            requestAnimationFrame(function() {
+                // Оптимизация скролла
+            });
+        }, {passive: true});
+        
+        // Добавление класса для мобильных устройств
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            document.body.classList.add('mobile-device');
+        }
+        
+        // Улучшение навигации для мобильных
+        const navbarToggler = document.querySelector('.navbar-toggler');
+        const navbarCollapse = document.querySelector('.navbar-collapse');
+        
+        if (navbarToggler && navbarCollapse) {
+            // Закрытие меню при клике на ссылку, кроме dropdown-toggle
+            const navLinks = navbarCollapse.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    if (link.classList.contains('dropdown-toggle')) return;
+                    if (window.innerWidth < 992) {
+                        const bsCollapse = new bootstrap.Collapse(navbarCollapse);
+                        bsCollapse.hide();
+                    }
+                });
+            });
+        }
+
+        // Автоматическое скрытие notification через 4 секунды
+        document.addEventListener('DOMContentLoaded', function() {
+            const notifications = document.querySelectorAll('.notification-alert');
+            notifications.forEach(function(alert) {
+                setTimeout(function() {
+                    if (alert.classList.contains('show')) {
+                        // Используем Bootstrap dismiss
+                        var bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                        bsAlert.close();
+                    }
+                }, 4000);
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

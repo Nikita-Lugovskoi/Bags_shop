@@ -1,0 +1,256 @@
+{% extends 'bags/base.html' %}
+{% load static %}
+
+{% block title %}Смена email{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="change-email-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-envelope-open-text"></i>
+                        Смена email адреса
+                    </h3>
+                    <p class="card-subtitle">
+                        Введите новый email и подтвердите паролем для безопасности
+                    </p>
+                </div>
+                
+                <div class="card-body">
+                    <div class="current-email-info">
+                        <h5>Текущий email:</h5>
+                        <p class="current-email">{{ user.email }}</p>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="{{ form.new_email.id_for_label }}">
+                                <i class="fas fa-envelope"></i>
+                                {{ form.new_email.label }}
+                            </label>
+                            {{ form.new_email }}
+                            {% if form.new_email.help_text %}
+                                <div class="help-text">{{ form.new_email.help_text }}</div>
+                            {% endif %}
+                            {% if form.new_email.errors %}
+                                <div class="error-message">{{ form.new_email.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.password.id_for_label }}">
+                                <i class="fas fa-lock"></i>
+                                {{ form.password.label }}
+                            </label>
+                            {{ form.password }}
+                            {% if form.password.help_text %}
+                                <div class="help-text">{{ form.password.help_text }}</div>
+                            {% endif %}
+                            {% if form.password.errors %}
+                                <div class="error-message">{{ form.password.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="security-notice">
+                            <i class="fas fa-shield-alt"></i>
+                            <div>
+                                <h6>Безопасность</h6>
+                                <p>После отправки формы на новый email придет письмо с ссылкой для подтверждения. Email будет изменен только после подтверждения.</p>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                                Отправить запрос на смену
+                            </button>
+                            <a href="{% url 'users:user_profile' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i>
+                                Вернуться в профиль
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .change-email-card {
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .card-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .card-title i {
+        margin-right: 10px;
+    }
+
+    .card-subtitle {
+        opacity: 0.9;
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .card-body {
+        padding: 40px;
+    }
+
+    .current-email-info {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        border-left: 4px solid #667eea;
+    }
+
+    .current-email-info h5 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .current-email {
+        font-size: 1.1rem;
+        color: #667eea;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #2c3e50;
+        font-weight: 500;
+    }
+
+    .form-group label i {
+        margin-right: 8px;
+        color: #667eea;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus {
+        border-color: #667eea;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .help-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 5px;
+    }
+
+    .security-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        background: #e3f2fd;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        border-left: 4px solid #2196f3;
+    }
+
+    .security-notice i {
+        color: #2196f3;
+        font-size: 1.2rem;
+        margin-top: 2px;
+    }
+
+    .security-notice h6 {
+        color: #1976d2;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    .security-notice p {
+        color: #424242;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .action-buttons {
+        display: grid;
+        gap: 15px;
+    }
+
+    .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn i {
+        margin-right: 8px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    .btn-outline-secondary {
+        background: transparent;
+        color: #6c757d;
+        border: 2px solid #6c757d;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #6c757d;
+        color: white;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %} 

@@ -1,0 +1,836 @@
+{% extends 'bags/base.html' %}
+{% load humanize %}
+
+{% block title %}Главная - Магазин сумочек из бусин{% endblock %}
+
+{% block content %}
+<style>
+    /* Modern CSS Variables */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        --warning-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --card-shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.15);
+        --border-radius: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Hero Section Improvements */
+    .hero-section {
+        background: linear-gradient(120deg, #f6f7fb 0%, #e0e7ff 100%);
+        color: #2d3436;
+        padding: 180px 0 120px 0;
+        margin-bottom: 80px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section .hero-bg-svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    .hero-section .hero-bg-beads {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 120px;
+        z-index: 1;
+        pointer-events: none;
+        opacity: 0.18;
+        background: url('data:image/svg+xml;utf8,<svg width="100%25" height="100%25" xmlns="http://www.w3.org/2000/svg"><g fill="%23667eea" fill-opacity="0.25"> <circle cx="40" cy="60" r="12"/><circle cx="120" cy="90" r="8"/><circle cx="200" cy="40" r="10"/><circle cx="300" cy="100" r="7"/><circle cx="400" cy="60" r="11"/><circle cx="600" cy="80" r="9"/><circle cx="700" cy="50" r="13"/></g></svg>') repeat-x;
+        background-size: auto 100%;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 320px;
+    }
+
+    .hero-text-bg {
+        display: inline-block;
+        background: linear-gradient(120deg, rgba(108,92,231,0.92) 0%, rgba(118,75,162,0.85) 100%);
+        border-radius: 32px;
+        box-shadow: 0 8px 32px rgba(108, 92, 231, 0.18), 0 1.5px 6px rgba(0,0,0,0.10);
+        padding: 48px 40px 40px 40px;
+        max-width: 100%;
+        margin: 0 auto;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        color: #fff;
+        text-shadow: 0 4px 24px rgba(44,44,84,0.18), 0 1.5px 6px rgba(0,0,0,0.10);
+        animation: fadeInUp 1s ease-out;
+    }
+
+    .hero-subtitle {
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        color: #fff;
+        opacity: 0.98;
+        text-shadow: 0 2px 12px rgba(44,44,84,0.18);
+        animation: fadeInUp 1s ease-out 0.2s both;
+    }
+
+    .hero-buttons {
+        animation: fadeInUp 1s ease-out 0.4s both;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Modern Button Styles */
+    .btn-modern {
+        padding: 15px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .btn-modern:hover::before {
+        left: 100%;
+    }
+
+    .btn-primary-modern {
+        background: var(--success-gradient);
+        color: white;
+        box-shadow: 0 8px 25px rgba(67, 233, 123, 0.3);
+    }
+
+    .btn-primary-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(67, 233, 123, 0.4);
+        color: white;
+    }
+
+    .btn-outline-modern {
+        background: transparent;
+        color: white;
+        border: 2px solid white;
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-outline-modern:hover {
+        background: white;
+        color: #667eea;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(255,255,255,0.3);
+    }
+
+    /* Features Section Improvements */
+    .features-section {
+        padding: 80px 0;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        text-align: center;
+        margin-bottom: 60px;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        position: relative;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: var(--primary-gradient);
+        border-radius: 2px;
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 40px 30px;
+        text-align: center;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary-gradient);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .feature-icon {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 25px;
+        background: var(--primary-gradient);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2.5rem;
+        transition: var(--transition);
+    }
+
+    .feature-card:hover .feature-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .feature-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        color: #2d3436;
+    }
+
+    .feature-description {
+        color: #636e72;
+        line-height: 1.6;
+        font-size: 1rem;
+    }
+
+    /* Product Cards Improvements */
+    .products-section {
+        padding: 80px 0;
+        background: white;
+    }
+
+    .product-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+        border: none;
+        overflow: hidden;
+        position: relative;
+        height: 100%; /* Адаптивная высота */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .product-image-container {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 20px;
+        height: 280px; /* Фиксированная высота изображения */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .product-image {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        transition: var(--transition);
+    }
+
+    .product-card:hover .product-image {
+        transform: scale(1.1);
+    }
+
+    .product-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: var(--success-gradient);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        z-index: 2;
+    }
+
+    .product-badge.unavailable {
+        background: var(--warning-gradient);
+    }
+
+    .product-content {
+        padding: 25px;
+        flex: 1; /* Занимает оставшееся пространство */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #2d3436;
+        line-height: 1.3;
+    }
+
+    .product-description {
+        color: #636e72;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 15px;
+        flex: 1; /* Занимает доступное пространство */
+    }
+
+    .product-price {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #00b894;
+        margin-bottom: 20px;
+    }
+
+    .product-actions {
+        display: flex;
+        gap: 10px;
+        flex-direction: column;
+        margin-top: auto; /* Прижимаем кнопки к низу */
+    }
+
+    .btn-product {
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: var(--transition);
+        text-decoration: none;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-product-primary {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+    }
+
+    .btn-product-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    .btn-product-outline {
+        background: transparent;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    .btn-product-outline:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-product-favorite {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        color: white;
+        border: none;
+    }
+
+    .btn-product-favorite:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+        color: white;
+    }
+
+    .btn-product-favorite-outline {
+        background: transparent;
+        color: #ff6b6b;
+        border: 2px solid #ff6b6b;
+    }
+
+    .btn-product-favorite-outline:hover {
+        background: #ff6b6b;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+        }
+        
+        .feature-card {
+            margin-bottom: 30px;
+        }
+        
+        .hero-buttons {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .btn-modern {
+            width: 100%;
+            min-height: 44px;
+            font-size: 16px;
+            padding: 12px 20px;
+        }
+        
+        .product-card {
+            margin-bottom: 20px;
+        }
+        
+        .product-image-container {
+            height: 200px; /* Меньшая высота изображения */
+        }
+        
+        .product-actions {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .btn-product {
+            width: 100%;
+            min-height: 44px;
+            font-size: 16px;
+            padding: 12px 16px;
+        }
+        
+        .hero-section {
+            padding: 60px 0;
+        }
+        
+        .features-section {
+            padding: 40px 0;
+        }
+        
+        .products-section {
+            padding: 40px 0;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1rem;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+        }
+        
+        .feature-title {
+            font-size: 1.2rem;
+        }
+        
+        .feature-description {
+            font-size: 0.9rem;
+        }
+        
+        .product-image-container {
+            height: 180px; /* Меньшая высота изображения */
+        }
+        
+        .product-title {
+            font-size: 1rem;
+        }
+        
+        .product-description {
+            font-size: 0.85rem;
+        }
+        
+        .product-price {
+            font-size: 1.1rem;
+        }
+        
+        .hero-section {
+            padding: 40px 0;
+        }
+        
+        .features-section {
+            padding: 30px 0;
+        }
+        
+        .products-section {
+            padding: 30px 0;
+        }
+        
+        .btn {
+            margin: 5px 0;
+        }
+    }
+
+    /* Loading Animation */
+    .loading-skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    /* Scroll Animations */
+    .fade-in {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.6s ease;
+    }
+
+    .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+</style>
+
+<!-- О нас -->
+<section class="hero-section">
+    <div class="hero-bg-svg">
+        <svg width="100%" height="100%" viewBox="0 0 1440 400" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+            <path d="M0,320 C320,400 1120,200 1440,320 L1440,0 L0,0 Z" fill="#a8a4e6" fill-opacity="0.18"/>
+            <path d="M0,250 C400,350 1040,100 1440,250 L1440,0 L0,0 Z" fill="#6c5ce7" fill-opacity="0.10"/>
+        </svg>
+    </div>
+    <div class="hero-bg-beads"></div>
+    <div class="hero-content">
+        <div class="container text-center position-relative" style="z-index:2;">
+            <div class="hero-text-bg mx-auto">
+                <h1 class="hero-title">Уникальные сумочки из бусин</h1>
+                <p class="hero-subtitle">Ручная работа с любовью к деталям • Качественные материалы • Индивидуальный дизайн</p>
+                <div class="hero-buttons d-flex justify-content-center gap-4">
+                    <a href="{% url 'bags:product_list' %}" class="btn btn-modern btn-primary-modern">
+                        <i class="fas fa-shopping-bag me-2"></i>Смотреть каталог
+                    </a>
+                    <a href="#features" class="btn btn-modern btn-outline-modern">
+                        <i class="fas fa-star me-2"></i>Узнать больше
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- О нас -->
+<section id="features" class="why-choose-us-section py-5" style="background: linear-gradient(120deg, #f6f7fb 0%, #e0e7ff 100%);">
+    <div class="container">
+        <h2 class="section-title fade-in mb-5">Почему выбирают нас?</h2>
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-6 col-lg-4 fade-in">
+                <div class="feature-card h-100">
+                    <div class="feature-icon mb-3" style="font-size:2.5rem;color:#764ba2;"><i class="fas fa-crown"></i></div>
+                    <h3 class="feature-title">Эксклюзивность и стиль</h3>
+                    <p class="feature-description">Каждая сумочка — это уникальное произведение искусства, созданное вручную с вниманием к деталям и модным тенденциям.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 fade-in">
+                <div class="feature-card h-100">
+                    <div class="feature-icon mb-3" style="font-size:2.5rem;color:#43e97b;"><i class="fas fa-hand-holding-heart"></i></div>
+                    <h3 class="feature-title">Доверие и забота</h3>
+                    <p class="feature-description">Мы ценим каждого клиента, гарантируем честность, прозрачность и индивидуальный подход на всех этапах заказа.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 fade-in">
+                <div class="feature-card h-100">
+                    <div class="feature-icon mb-3" style="font-size:2.5rem;color:#f5576c;"><i class="fas fa-shield-alt"></i></div>
+                    <h3 class="feature-title">Гарантия качества</h3>
+                    <p class="feature-description">Используем только лучшие материалы и проверенные технологии, чтобы ваша сумочка радовала вас долгое время.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 fade-in">
+                <div class="feature-card h-100">
+                    <div class="feature-icon mb-3" style="font-size:2.5rem;color:#4facfe;"><i class="fas fa-user-edit"></i></div>
+                    <h3 class="feature-title">Индивидуальный заказ</h3>
+                    <p class="feature-description">Возможность создать аксессуар по вашему эскизу или выбрать цветовую гамму и детали под ваш стиль.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 fade-in">
+                <div class="feature-card h-100">
+                    <div class="feature-icon mb-3" style="font-size:2.5rem;color:#f093fb;"><i class="fas fa-gift"></i></div>
+                    <h3 class="feature-title">Подарочная упаковка</h3>
+                    <p class="feature-description">Каждая сумочка красиво упакована — идеально для подарка близким или себе любимой!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Наши товары -->
+<section class="products-section">
+    <div class="container">
+        <h2 class="section-title fade-in">Наши работы</h2>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 justify-content-center">
+            {% for product in latest_products %}
+            <div class="col d-flex align-items-stretch fade-in">
+                <div class="product-card h-100 w-100">
+                    <div class="product-image-container">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" class="product-image" alt="{{ product.name }}">
+                        {% else %}
+                            <img src="https://via.placeholder.com/400x400" class="product-image" alt="Нет изображения">
+                        {% endif %}
+                        {% if product.in_stock %}
+                            <div class="product-badge">В наличии</div>
+                        {% else %}
+                            <div class="product-badge unavailable">На заказ</div>
+                        {% endif %}
+                    </div>
+                    <div class="product-content">
+                        <h5 class="product-title">{{ product.name }}</h5>
+                        <p class="product-description">{{ product.description|truncatewords:12 }}</p>
+                        <p class="product-price">{{ product.price|floatformat:0|intcomma }} ₽</p>
+                        <div class="product-actions">
+                            <a href="{% url 'bags:product_detail' product.slug %}" class="btn-product btn-product-outline">
+                                <i class="fas fa-eye"></i>Подробнее
+                            </a>
+                            {% if user.is_authenticated %}
+                                {% if product.in_stock %}
+                                    <a href="{% url 'bags:add_to_cart' product.id %}" class="btn-product btn-product-primary">
+                                        <i class="fas fa-shopping-cart"></i>В корзину
+                                    </a>
+                                {% else %}
+                                    {% if product in user.favorite_set.all %}
+                                        <a href="{% url 'bags:remove_from_favorites' product.id %}" class="btn-product btn-product-favorite-outline">
+                                            <i class="fas fa-heart"></i>В избранном
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'bags:add_to_favorites' product.id %}" class="btn-product btn-product-favorite">
+                                            <i class="far fa-heart"></i>В избранное
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center fade-in">
+                <div class="py-5">
+                    <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                    <p class="text-muted fs-5">Пока нет доступных товаров</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5 fade-in">
+            <a href="{% url 'bags:product_list' %}" class="btn btn-modern btn-primary-modern">
+                <i class="fas fa-th-large me-2"></i>Смотреть все товары
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Доставка -->
+<section id="delivery" class="delivery-section py-5" style="background: linear-gradient(120deg, #f6f7fb 0%, #e0e7ff 100%);">
+    <div class="container">
+        <h2 class="section-title fade-in mb-5">Варианты доставки</h2>
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-6 col-lg-4 fade-in">
+                <div class="feature-card h-100">
+                    <div class="feature-icon mb-3" style="font-size:2.5rem;color:#43e97b;"><i class="fas fa-store"></i></div>
+                    <h3 class="feature-title">САМОВЫВОЗ</h3>
+                    <p class="feature-description mb-1"><strong>Бесплатно</strong></p>
+                    <p class="feature-description">Только для г. Хабаровск</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 fade-in">
+                <div class="feature-card h-100">
+                    <div class="feature-icon mb-3" style="font-size:2.5rem;color:#f5576c;"><i class="fas fa-truck"></i></div>
+                    <h3 class="feature-title">ДОСТАВКА КУРЬЕРОМ</h3>
+                    <p class="feature-description mb-1">Подробности: +7 962 296 48 50</p>
+                    <p class="feature-description">Доставка курьером в день изготовления сумочки осуществляется только в пределах г. Хабаровск.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 fade-in">
+                <div class="feature-card h-100">
+                    <div class="feature-icon mb-3" style="font-size:2.5rem;color:#4facfe;"><i class="fas fa-plane"></i></div>
+                    <h3 class="feature-title">ДОСТАВКА ПО РОССИИ</h3>
+                    <p class="feature-description mb-1">Подробности: +7 962 296 48 50</p>
+                    <p class="feature-description">Доставка по России осуществляется компанией CDEK. Сроки доставки зависят от вашего города и могут занимать от 2 рабочих дней до 14. При расчете сроков доставки учитывается время на изготовление. На выбор предоставляется доставка до квартиры/дома, либо до пункта выдачи СДЕК.<br>Также доставка осуществляется почтой России и рассчитывается индивидуально.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<!-- <section class="faq-section py-5" style="background: linear-gradient(120deg, #e0e7ff 0%, #f6f7fb 100%);">
+    <div class="container">
+        <h2 class="section-title fade-in mb-5">Часто задаваемые вопросы</h2>
+        <div class="accordion" id="faqAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="faq1">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
+                        Как оформить заказ?
+                    </button>
+                </h2>
+                <div id="collapse1" class="accordion-collapse collapse show" aria-labelledby="faq1" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Выберите понравившуюся сумочку, добавьте в корзину и перейдите к оформлению заказа. Заполните контактные данные и выберите способ доставки и оплаты.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="faq2">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                        Как происходит доставка?
+                    </button>
+                </h2>
+                <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="faq2" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Мы отправляем заказы по всей России и странам СНГ. Доступны курьерская доставка и почта. После отправки вы получите трек-номер для отслеживания.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="faq3">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
+                        Можно ли заказать сумочку по индивидуальному дизайну?
+                    </button>
+                </h2>
+                <div id="collapse3" class="accordion-collapse collapse" aria-labelledby="faq3" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Да! Мы с радостью реализуем ваш эскиз или поможем подобрать цветовую гамму и детали. Просто свяжитесь с нами через форму обратной связи или соцсети.
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="faq4">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+                        Какие способы оплаты доступны?
+                    </button>
+                </h2>
+                <div id="collapse4" class="accordion-collapse collapse" aria-labelledby="faq4" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Мы принимаем оплату банковскими картами, через СБП, а также возможна оплата при получении (наложенный платеж).
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="faq5">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
+                        Можно ли вернуть или обменять товар?
+                    </button>
+                </h2>
+                <div id="collapse5" class="accordion-collapse collapse" aria-labelledby="faq5" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Да, вы можете вернуть или обменять товар в течение 14 дней, если он не был в использовании и сохранил товарный вид. Индивидуальные заказы возврату не подлежат.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section> -->
+
+<script>
+// Scroll animations
+document.addEventListener('DOMContentLoaded', function() {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.fade-in').forEach(el => {
+        observer.observe(el);
+    });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

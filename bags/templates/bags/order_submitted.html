@@ -1,0 +1,19 @@
+{% extends 'bags/base.html' %}
+{% block title %}Заказ принят - Магазин сумочек из бусин{% endblock %}
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="mb-4">
+        <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+        <h1 class="mb-3">Ваш заказ принят!</h1>
+        <p class="lead mb-4">Спасибо за ваш заказ.<br>В ближайшее время с вами свяжется наш менеджер для уточнения всех деталей.<br>Мы ценим каждого клиента и обязательно учтём ваши пожелания!</p>
+    </div>
+    <div class="d-flex justify-content-center gap-3">
+        <a href="{% url 'bags:product_list' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-th-large me-2"></i>Вернуться в каталог
+        </a>
+        <a href="{% url 'bags:order_history' %}" class="btn btn-outline-primary btn-lg">
+            <i class="fas fa-box me-2"></i>Посмотреть мои заказы
+        </a>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,102 @@
+{% extends 'users/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block user_title %}Регистрация{% endblock %}
+
+{% block user_header %}Регистрация нового пользователя{% endblock %}
+
+{% block user_content %}
+<div class="alert alert-info mb-4">
+    <h5><i class="fas fa-info-circle me-2"></i>Важная информация</h5>
+    <p class="mb-0">После регистрации вам будет отправлено письмо с ссылкой для подтверждения email. 
+    Только после подтверждения email вы сможете войти в систему.</p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <!-- Основные поля формы -->
+    <div class="row">
+        <div class="col-md-6">
+            {{ form.email|as_crispy_field }}
+        </div>
+        <div class="col-md-6">
+            {{ form.first_name|as_crispy_field }}
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            {{ form.last_name|as_crispy_field }}
+        </div>
+        <div class="col-md-6">
+            {{ form.password1|as_crispy_field }}
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            {{ form.password2|as_crispy_field }}
+        </div>
+    </div>
+    
+    <!-- Поле согласия на обработку персональных данных -->
+    <div class="privacy-agreement-section mt-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="form-check">
+                    {{ form.privacy_agreement }}
+                    <label class="form-check-label" for="{{ form.privacy_agreement.id_for_label }}">
+                        {{ form.privacy_agreement.label }}
+                    </label>
+                    {% if form.privacy_agreement.help_text %}
+                        <div class="form-text mt-2">
+                            {{ form.privacy_agreement.help_text|safe }}
+                        </div>
+                    {% endif %}
+                    {% if form.privacy_agreement.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.privacy_agreement.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="d-grid gap-2 mt-4">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
+        </button>
+    </div>
+</form>
+
+<div class="text-center mt-3">
+    <p>Уже есть аккаунт? <a href="{% url 'users:user_login' %}">Войти</a></p>
+</div>
+
+<style>
+.privacy-agreement-section .card {
+    border: 2px solid #e3f2fd;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
+}
+
+.privacy-agreement-section .card-body {
+    padding: 20px;
+}
+
+.form-check-input:checked {
+    background-color: #2196f3;
+    border-color: #2196f3;
+}
+
+.form-text a {
+    color: #2196f3;
+    text-decoration: none;
+}
+
+.form-text a:hover {
+    text-decoration: underline;
+}
+</style>
+{% endblock %} 

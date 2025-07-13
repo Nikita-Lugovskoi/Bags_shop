@@ -1,0 +1,71 @@
+{% extends 'users/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block user_title %}Вход{% endblock %}
+
+{% block user_header %}Вход в систему{% endblock %}
+
+{% block user_content %}
+<form method="post">
+    {% csrf_token %}
+    
+    <!-- Основные поля формы -->
+    {% for field in form %}
+        {% if field.name != 'remember_me' %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+                {% if field.errors %}
+                    <div class="alert alert-danger">
+                        {% for error in field.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endfor %}
+    
+    <!-- Поле "Запомнить меня"  -->
+    <div class="form-check mb-3">
+        {{ form.remember_me }}
+        <label class="form-check-label" for="{{ form.remember_me.id_for_label }}">
+            {{ form.remember_me.label }}
+        </label>
+    </div>
+    
+    <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-sign-in-alt me-2"></i>Войти
+        </button>
+    </div>
+</form>
+<div class="text-center mt-3">
+    <p>Нет аккаунта? <a href="{% url 'users:user_register' %}">Зарегистрироваться</a></p>
+    <p><a href="{% url 'users:password_reset' %}">Забыли пароль?</a></p>
+</div>
+
+<style>
+.form-check {
+    margin-bottom: 1rem;
+}
+
+.form-check-input:checked {
+    background-color: #2196f3;
+    border-color: #2196f3;
+}
+
+.form-check-label {
+    color: #666;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.form-check-label:hover {
+    color: #2196f3;
+}
+</style>
+{% endblock %} 
